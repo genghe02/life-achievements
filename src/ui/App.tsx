@@ -17,6 +17,7 @@ function useEscapeToDeselect() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if (e.isComposing || e.keyCode === 229) return; // Esc that cancels a pinyin composition
       const ui = useUi.getState();
       if (ui.modal) return; // the modal handles its own Esc
       // in the detail panel's date or note field, Esc first leaves the field (which saves it on

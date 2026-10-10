@@ -1,1 +1,50 @@
 /* Node, area and trade editors (src/ui/modals except the menu). */
+
+/* the dialog box takes focus when Esc leaves a text field */
+.mbox:focus { outline: none; }
+/* keep scrolled content off the bottom edge of the frame, under the sticky action row */
+.mscroll { clip-path: inset(0 0 4px); }
+
+/* ---------- 交易 ---------- */
+.trade .tbuy { flex: none; }
+.row > .field.fcost { flex: 0 1 120px; }
+.trade.editing .form { gap: 10px; }
+.trade.editing .mrow .btn.sm { min-width: 64px; }
+
+/* folded icon picker in the reward forms */
+.ipick { display: flex; flex-direction: column; gap: 8px; }
+.ipick > summary { display: flex; align-items: center; gap: 8px; width: max-content; max-width: 100%; cursor: pointer; list-style: none; color: var(--ink-soft); }
+.ipick > summary::-webkit-details-marker { display: none; }
+.ipick-name { color: var(--ink); }
+.ipick-hint { text-decoration: underline; text-underline-offset: 2px; }
+.ipick[open] .ipick-hint { display: none; }
+.ipick > summary:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
+/* ---------- node editor ---------- */
+.seg label > .small { color: inherit; opacity: .85; }
+/* gateways of an area root: one fold per other area */
+.pgroups { display: flex; flex-direction: column; gap: 6px; }
+.pgrp { display: flex; flex-direction: column; }
+.pgrp > summary { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 4px 8px 4px 6px; cursor: pointer; list-style: none;
+  background: #b0b0b0; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7b7b7b; color: var(--ink); }
+.pgrp > summary::-webkit-details-marker { display: none; }
+.pgrp > summary::after { content: "+"; content: "+" / ""; width: 1em; text-align: center; color: var(--ink-soft); }
+.pgrp[open] > summary::after { content: "-"; content: "-" / ""; }
+.pgrp > summary:focus-visible { outline: 2px solid #000; outline-offset: 1px; }
+.pgrp .pgn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgrp .pgc { color: var(--t-ok-ink); }
+.pgrp > .seg { padding: 8px 0 4px; }
+@media (hover: hover) {
+  .pgrp > summary:hover, .ipick > summary:hover { filter: brightness(1.06); }
+}
+
+/* phones: a reward row keeps cost, icon and name on its first line; the actions wrap below */
+@media (max-width: 559px) {
+  .trade { flex-wrap: wrap; row-gap: 6px; }
+  .trade .tn { flex: 1 1 calc(100% - 110px); }
+  .trade .tact { order: 1; }
+  .trade .tbuy { order: 2; margin-left: auto; }
+}
+@media (pointer: coarse) {
+  .pgrp > summary, .ipick > summary { min-height: 40px; }
+}

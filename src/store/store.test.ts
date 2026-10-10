@@ -632,8 +632,8 @@ describe('deleteAchievement', () => {
   it('names the achievements that depend on it, in any area', () => {
     const env = setup();
     expect(env.s().deleteAchievement('o_body')).toEqual({ ok: false, error: '先删除或修改「离线模式」「热身完毕」，它们把这个进度当作前置。' });
-    // a hidden locked dependant is not spoiled
-    expect(env.s().deleteAchievement('o_home')).toEqual({ ok: false, error: MSG.deleteDeps('「???」') });
+    // a hidden dependant is named too: whoever deletes has to find it
+    expect(env.s().deleteAchievement('o_home')).toEqual({ ok: false, error: MSG.deleteDeps('「那棵树长大了」') });
   });
 
   it('asks to undo a done achievement first', () => {

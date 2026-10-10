@@ -10,7 +10,6 @@ import { DEF_PTS, DEF_XP, levelOf, totals } from '../domain/level';
 import {
   byId,
   childrenOf,
-  displayTitle,
   isDone,
   nodesOfArea,
   statusOf,
@@ -395,7 +394,8 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
         if (!n) return err(MSG.noNode);
         if (n.x === 0) return err(MSG.deleteRoot);
         const deps = childrenOf(data, id);
-        if (deps.length) return err(MSG.deleteDeps(quoteAll(deps.map(d => displayTitle(data, d)))));
+        // real titles even for hidden ones: whoever deletes is editing the tree and has to find them
+        if (deps.length) return err(MSG.deleteDeps(quoteAll(deps.map(d => d.title))));
         if (isDone(data, id)) return err(MSG.deleteDone);
         const done = { ...data.done };
         const progress = { ...data.progress };

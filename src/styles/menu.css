@@ -1,1 +1,67 @@
-/* Menu, onboarding and update bar. */
+/* Menu (统计 / 设置 / 数据 / 添加到主屏幕 / 重新开始) and the update bar's layout. Base section
+   classes live in modals.css, the update bar's look in fx.css, onboarding in onboarding.css. */
+
+/* 统计: six numbers in two rows, the XP still needed, then one bar per area */
+.msec .ov-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mxp { display: flex; align-items: center; gap: 8px; }
+.mxp img { width: 16px; height: 16px; flex: none; }
+/* one shared name column sized to the longest area name (names go up to 6 characters) */
+@supports (grid-template-columns: subgrid) {
+  .msec .stat-rows { display: grid; grid-template-columns: 16px max-content minmax(0, 1fr) max-content; column-gap: 10px; row-gap: 8px; }
+  .msec .stat-rows li { grid-column: 1 / -1; grid-template-columns: subgrid; }
+  .msec .stat-rows li > span:nth-child(2) { overflow: visible; }
+}
+
+/* 设置: label left, 开/关 right */
+.msec.settings > div { min-height: 32px; }
+.msec.settings .btn { min-width: 48px; }
+
+/* no one-character last lines in the notes */
+.msec .mnote, .msec .mwarn { text-wrap: pretty; }
+
+/* 数据 */
+.msum-name { font-weight: 400; overflow-wrap: anywhere; }
+.msum .kv { color: var(--ink); }
+.msum .mnote { color: var(--ink-soft); }
+.msec .mwarn { overflow-wrap: anywhere; }
+.msnaps > summary { padding: 4px 0; }
+/* a closed <details> still lays out its (empty) content slot as a flex item */
+.msnaps:not([open]) { gap: 0; }
+.snaps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.snaps li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #b0b0b0; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7b7b7b; }
+.snaps .sd { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; color: var(--ink); }
+.snaps .sd .small { color: var(--ink-soft); }
+.snaps .btn { flex: none; }
+
+/* 添加到主屏幕 / 重新开始 */
+.msec .steps li::marker { color: var(--ink-soft); }
+.msec .seg label { padding-right: 12px; }
+
+@media (max-width: 559px) {
+  .msec .ov-stats { gap: 4px; }
+  .msec .ov-stats div { padding: 6px; }
+  .msum .kv { grid-template-columns: minmax(0, 1fr); }
+}
+/* three cells are too narrow for 「人生等级 · 新手」 below ~400px (it broke as 「新/手」) */
+@media (max-width: 419px) {
+  .msec .ov-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (pointer: coarse) {
+  .msec.settings > div { min-height: 40px; }
+  .msnaps > summary { min-height: 40px; }
+}
+
+/* ---------- update bar (「有新版本」) ---------- */
+.updbar .ul2 { margin-left: 10px; }
+/* Phones: the sheet owns the bottom edge, so the bar sits on the HUD. It is HUD-high and only as wide
+   as 「有新版本」 + 更新 + ×, covering the level and XP but not 交易 or the ≡ menu. `html` outranks
+   the phone rule in responsive.css, which loads later. */
+@media (max-width: 859px) {
+  html .updbar { top: calc(8px + var(--safe-t)); bottom: auto; left: max(16px, var(--safe-l)); transform: none;
+    min-height: 44px; padding: 2px 2px 2px 10px; gap: 6px; animation-name: updin-hud; }
+  .updbar .ul2 { display: none; }
+}
+@media (max-width: 859px) and (max-height: 500px) {
+  html .updbar { top: calc(4px + var(--safe-t)); }
+}
+@keyframes updin-hud { from { transform: translateY(calc(-100% - 24px)); } }

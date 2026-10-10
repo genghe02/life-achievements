@@ -1,19 +1,72 @@
-/* ---------- onboarding (first launch): 示例模板 or 空白开始 ---------- */
+/* ---------- onboarding (first launch): a title screen with 示例模板 or 空白开始 ----------
+   Like the game's title screen: a lighter dirt backdrop, a big pixel title, the yellow splash line
+   and two large grey buttons. */
 .onb { height: 100%; overflow: auto; display: grid; place-items: center;
-  padding: calc(16px + var(--safe-t)) max(16px, var(--safe-r)) calc(16px + var(--safe-b)) max(16px, var(--safe-l)); }
-.onb-box { width: min(620px, 100%); display: flex; flex-direction: column; gap: 16px; padding: 22px 22px 20px; }
-.onb-head { display: flex; align-items: center; gap: 14px; }
-.onb-head h1 { margin: 0; font-size: 32px; line-height: 32px; font-weight: 400; color: var(--ink); }
-.onb-head p { margin: 6px 0 0; color: var(--ink-soft); }
-.onb-lead { margin: 0; color: var(--ink); }
-.onb-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.onb-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 140px; padding: 14px; border: 0; cursor: pointer; text-align: left;
-  color: var(--ink); background: #b0b0b0; box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 #e0e0e0, inset -4px -4px 0 #7b7b7b; }
-.onb-choice .oc-h { display: flex; align-items: center; gap: 10px; }
-.onb-choice b { font-weight: 400; color: var(--ink); }
-.onb-choice .oc-d { color: var(--ink-soft); }
-.onb-choice:focus-visible { outline: none; background: #c5c5ff; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #e6e6ff, inset -4px -4px 0 #8a8ab0; }
-@media (hover: hover) { .onb-choice:hover { background: #c5c5ff; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #e6e6ff, inset -4px -4px 0 #8a8ab0; } }
-.onb-choice:active { box-shadow: inset 0 0 0 2px #fff, inset -4px -4px 0 #e6e6ff, inset 4px 4px 0 #8a8ab0; }
-.onb-choice[disabled] { cursor: progress; opacity: .7; }
-.onb-note { margin: 0; color: var(--ink-soft); }
+  padding: calc(24px + var(--safe-t)) max(16px, var(--safe-r)) calc(24px + var(--safe-b)) max(16px, var(--safe-l));
+  background: linear-gradient(rgba(12, 8, 6, .6), rgba(12, 8, 6, .72)), var(--dirt, none) 0 0 / 64px 64px, var(--night);
+  user-select: none; -webkit-user-select: none; }
+.onb .onb-box { width: min(640px, 100%); display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 0; text-align: center; }
+.onb .onb-head { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.onb-badge { position: relative; flex: none; width: 78px; height: 78px; }
+.onb-badge img { position: absolute; }
+.onb-badge .fr { left: 0; top: 0; width: 78px; height: 78px; }
+.onb-badge .ic { left: 15px; top: 15px; width: 48px; height: 48px; }
+/* Unifont at 3x (4x on big screens, 2x on phones): white over light grey with a stepped drop, like the
+   game's logo; plain white text with a shadow where background-clip: text is missing */
+.onb .onb-title { --px: 3px; margin: 0; font: 48px/48px var(--font-ui); font-weight: 400; letter-spacing: var(--px); color: #fff;
+  text-shadow: var(--px) var(--px) 0 #3f3f3f; white-space: nowrap; }
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .onb .onb-title { color: transparent; text-shadow: none; background: linear-gradient(#fff 0 50%, #d0d0d0 50%);
+    -webkit-background-clip: text; background-clip: text;
+    filter: drop-shadow(0 var(--px) 0 #555) drop-shadow(var(--px) var(--px) 0 #111); }
+}
+/* the yellow splash line under the title */
+.onb-lead { margin: -6px 0 6px; max-width: 30em; color: var(--t-yellow); text-shadow: 2px 2px 0 #3f3f15; text-wrap: balance; }
+.onb .onb-choices { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.onb .onb-choice { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; min-width: 0; min-height: 128px; padding: 14px 16px 16px;
+  border: 0; cursor: pointer; text-align: left; color: #fff; text-shadow: 2px 2px 0 #383838; background: var(--btn);
+  box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 var(--btn-hi), inset -4px -4px 0 var(--btn-lo); }
+.onb .onb-choice .oc-h { display: flex; align-items: center; gap: 12px; }
+.onb .onb-choice b { font-weight: 400; color: #fff; }
+.onb .onb-choice .oc-d { color: #fff; overflow-wrap: anywhere; text-wrap: pretty; }
+.onb .onb-choice .oc-d > span { display: block; }
+.onb .onb-choice:focus-visible { outline: none; background: #858585; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #bdbdbd, inset -4px -4px 0 #4a4a4a; }
+.onb .onb-choice:focus-visible b { color: var(--t-yellow); text-shadow: 2px 2px 0 #3f3f15; }
+@media (hover: hover) {
+  .onb .onb-choice:hover { background: #858585; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #bdbdbd, inset -4px -4px 0 #4a4a4a; }
+  .onb .onb-choice:hover b { color: var(--t-yellow); text-shadow: 2px 2px 0 #3f3f15; }
+}
+.onb .onb-choice:active { box-shadow: inset 0 0 0 2px #fff, inset -4px -4px 0 var(--btn-hi), inset 4px 4px 0 var(--btn-lo); }
+.onb .onb-note { margin: 0; color: var(--t-grey); text-shadow: 1px 1px 0 #000; }
+
+/* big screens: a 4x title */
+@media (min-width: 760px) and (min-height: 600px) {
+  .onb .onb-box { width: min(680px, 100%); gap: 24px; }
+  .onb .onb-head { gap: 24px; }
+  .onb-badge { width: 104px; height: 104px; }
+  .onb-badge .fr { width: 104px; height: 104px; }
+  .onb-badge .ic { left: 20px; top: 20px; width: 64px; height: 64px; }
+  .onb .onb-title { --px: 4px; font-size: 64px; line-height: 64px; }
+}
+/* narrow phones: one column, a 2x title */
+@media (max-width: 559px) {
+  .onb .onb-box { gap: 16px; }
+  .onb .onb-head { gap: 12px; }
+  .onb-badge { width: 52px; height: 52px; }
+  .onb-badge .fr { width: 52px; height: 52px; }
+  .onb-badge .ic { left: 10px; top: 10px; width: 32px; height: 32px; }
+  .onb .onb-title { --px: 2px; font-size: 32px; line-height: 32px; }
+  .onb .onb-choices { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .onb .onb-choice { min-height: 0; }
+}
+/* phone held sideways: everything has to fit in ~390px of height */
+@media (max-height: 500px) {
+  .onb { padding-block: calc(12px + var(--safe-t)) calc(12px + var(--safe-b)); }
+  .onb .onb-box { gap: 12px; }
+  .onb-badge { width: 52px; height: 52px; }
+  .onb-badge .fr { width: 52px; height: 52px; }
+  .onb-badge .ic { left: 10px; top: 10px; width: 32px; height: 32px; }
+  .onb .onb-title { --px: 2px; font-size: 32px; line-height: 32px; }
+  .onb-lead { margin: -4px 0 2px; }
+  .onb .onb-choice { min-height: 0; padding: 10px 14px 12px; gap: 8px; }
+}

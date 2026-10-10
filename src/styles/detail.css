@@ -52,7 +52,9 @@
 .dmsg:empty { display: none; }
 .dh h2:focus { outline: none; }
 .mbox { --pf: var(--face); }
-.mscroll .dact { bottom: 4px; margin: 0 -12px -12px; padding: 10px 12px 12px; }
+/* in a modal the stuck row stops 4px above the scroll area's bottom, where it also rests at the end
+   of the content (no jump); editors.css clips that 4px strip of .mscroll so the frame shows there */
+.mscroll .dact { bottom: -12px; margin: 0 -12px -12px; padding: 10px 12px 12px; }
 
 /* done achievements: 达成日期 (date input) and 感想 (note) */
 .dinfo { display: flex; flex-direction: column; gap: 10px; }

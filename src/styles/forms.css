@@ -47,7 +47,10 @@ fieldset.field { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
 
 /* 「高级」 disclosure in the node editor */
 .adv { display: flex; flex-direction: column; gap: 10px; }
-.adv > summary { cursor: pointer; color: var(--ink-soft); list-style: none; width: max-content; }
+/* flex with a gap: a trailing space in ::before would collapse once (pointer: coarse) makes it flex */
+.adv > summary { display: flex; align-items: center; gap: .5em; cursor: pointer; color: var(--ink-soft); list-style: none; width: max-content; }
 .adv > summary::-webkit-details-marker { display: none; }
-.adv > summary::before { content: "+ "; }
-.adv[open] > summary::before { content: "- "; }
+/* the "/ ''" alt text keeps screen readers from reading the sign out (older engines use the first value) */
+.adv > summary::before { content: "+"; content: "+" / ""; }
+.adv[open] > summary::before { content: "-"; content: "-" / ""; }
+.adv > summary:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
