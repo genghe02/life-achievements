@@ -1,0 +1,1581 @@
+{
+ "tabs": [
+  {
+   "id": "origin",
+   "name": "起源",
+   "subtitle": "虚空之上，从一棵树开始",
+   "bg": "dirt",
+   "icon": "sapling",
+   "nodes": [
+    {
+     "id": "o_start",
+     "x": 0,
+     "y": 0,
+     "title": "开局一棵树",
+     "desc": "在纸上或手机备忘录里写下3件这辈子最想做到的事",
+     "tip": "空岛玩家都懂：有一棵树，就有一整个世界。",
+     "type": "task",
+     "icon": "sapling",
+     "parents": [],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "o_sleep",
+     "x": 1,
+     "y": -2,
+     "title": "甜蜜的梦",
+     "desc": "23:30前放下手机上床，一觉睡满7小时",
+     "tip": "床在下界会爆炸，好在你的卧室不是下界。",
+     "type": "task",
+     "icon": "bed",
+     "parents": [
+      "o_start"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "o_water",
+     "x": 1,
+     "y": 0,
+     "title": "无限水源",
+     "desc": "一天之内喝够1.5升白开水，奶茶不算",
+     "type": "task",
+     "icon": "water",
+     "parents": [
+      "o_start"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "o_tidy",
+     "x": 1,
+     "y": 2,
+     "title": "基地大扫除",
+     "desc": "清空桌面、衣服归位、倒掉垃圾、拖一遍地",
+     "type": "task",
+     "icon": "broom",
+     "parents": [
+      "o_start"
+     ],
+     "xp": 25,
+     "pts": 1
+    },
+    {
+     "id": "o_mind",
+     "x": 2,
+     "y": -3,
+     "title": "知识之书",
+     "desc": "从头到尾读完一本书，不限题材",
+     "type": "task",
+     "icon": "book",
+     "parents": [
+      "o_sleep"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "o_body",
+     "x": 2,
+     "y": -1,
+     "title": "掉一格鸡腿",
+     "desc": "第一次为了健康，认真运动30分钟",
+     "tip": "疾跑会掉饥饿值，跑完记得吃点好的。",
+     "type": "task",
+     "icon": "boots",
+     "parents": [
+      "o_sleep",
+      "o_water"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "o_cook",
+     "x": 2,
+     "y": 1,
+     "title": "熔炉点火",
+     "desc": "不点外卖，自己做一顿有荤有素的饭",
+     "tip": "番茄炒蛋是新手村的钻石剑。",
+     "type": "task",
+     "icon": "stew",
+     "parents": [
+      "o_water",
+      "o_tidy"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "o_wealth",
+     "x": 2,
+     "y": 3,
+     "title": "清点库存",
+     "desc": "开始记账：把今天花的每一笔钱都记下来",
+     "type": "task",
+     "icon": "coin",
+     "parents": [
+      "o_tidy"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "o_bond",
+     "x": 3,
+     "y": -3,
+     "title": "重新连接",
+     "desc": "主动联系一位很久没聊的朋友，聊满10分钟",
+     "tip": "开场白就用“最近读了本书，想起你”。",
+     "type": "task",
+     "icon": "letter",
+     "parents": [
+      "o_mind"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "o_offline",
+     "x": 3,
+     "y": -1,
+     "title": "离线模式",
+     "desc": "连续7天，每天手机屏幕使用时间少于4小时",
+     "tip": "放心，你下线了，服务器也不会关。",
+     "type": "goal",
+     "icon": "lantern",
+     "parents": [
+      "o_body"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一杯不看手机的下午茶",
+     "target": 7,
+     "unit": "天"
+    },
+    {
+     "id": "o_craft",
+     "x": 3,
+     "y": 1,
+     "title": "亲手合成",
+     "desc": "亲手做出一件完整的作品：手工、画作或一段能跑的代码都算",
+     "type": "goal",
+     "icon": "hammer",
+     "parents": [
+      "o_cook"
+     ],
+     "xp": 100,
+     "pts": 5,
+     "reward": "买一件称手的工具"
+    },
+    {
+     "id": "o_road",
+     "x": 3,
+     "y": 3,
+     "title": "离开出生点",
+     "desc": "独自去一个从没去过的地方，待满半天",
+     "tip": "不用走很远，隔壁区的老街也算新区块。",
+     "type": "goal",
+     "icon": "compass",
+     "parents": [
+      "o_wealth"
+     ],
+     "xp": 80,
+     "pts": 4,
+     "reward": "回程买一份当地小吃"
+    },
+    {
+     "id": "o_home",
+     "x": 4,
+     "y": 0,
+     "title": "自立门户",
+     "desc": "搬出来独立生活满12个月，房租水电全靠自己",
+     "tip": "冰箱空了不会自己刷新，这就是生存模式。",
+     "type": "challenge",
+     "icon": "house",
+     "parents": [
+      "o_offline",
+      "o_craft"
+     ],
+     "xp": 300,
+     "pts": 15,
+     "reward": "给小窝添一盆绿植",
+     "target": 12,
+     "unit": "个月"
+    },
+    {
+     "id": "o_tree",
+     "x": 5,
+     "y": 0,
+     "title": "那棵树长大了",
+     "desc": "开局写下的3件事，实现其中任意1件",
+     "tip": "当初那棵树苗，如今已经能遮阴了。",
+     "type": "challenge",
+     "icon": "nether_star",
+     "parents": [
+      "o_home"
+     ],
+     "xp": 500,
+     "pts": 25,
+     "reward": "一场只属于自己的庆功宴",
+     "hidden": true
+    }
+   ]
+  },
+  {
+   "id": "body",
+   "name": "体魄",
+   "subtitle": "生命值上限是练出来的",
+   "bg": "grass",
+   "icon": "heart",
+   "nodes": [
+    {
+     "id": "b_warm_up",
+     "x": 0,
+     "y": 0,
+     "title": "热身完毕",
+     "desc": "一周内运动3次，每次不少于30分钟",
+     "type": "task",
+     "icon": "heart",
+     "parents": [
+      "o_body"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "b_strength_potion",
+     "x": 1,
+     "y": -2,
+     "title": "力量药水",
+     "desc": "完成一次45分钟力量训练，腿、胸、背都要练到",
+     "tip": "第二天下楼梯腿发抖，说明药效到了。",
+     "type": "task",
+     "icon": "potion",
+     "parents": [
+      "b_warm_up"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "b_quit_soda",
+     "x": 2,
+     "y": -3,
+     "title": "戒掉快乐水",
+     "desc": "连续21天不喝奶茶、可乐等含糖饮料",
+     "tip": "糖分是最温柔的苦力怕。",
+     "type": "task",
+     "icon": "water",
+     "parents": [
+      "b_strength_potion"
+     ],
+     "xp": 40,
+     "pts": 2,
+     "target": 21,
+     "unit": "天"
+    },
+    {
+     "id": "b_pull_up",
+     "x": 2,
+     "y": -1,
+     "title": "下巴过杠",
+     "desc": "一组做完10个标准引体向上，每次下巴过杠",
+     "tip": "第一个最难，后面9个只是复制粘贴。",
+     "type": "task",
+     "icon": "dumbbell",
+     "parents": [
+      "b_strength_potion"
+     ],
+     "xp": 50,
+     "pts": 2
+    },
+    {
+     "id": "b_new_skin",
+     "x": 3,
+     "y": -2,
+     "title": "换个皮肤",
+     "desc": "体脂率比解锁时下降3个百分点，或腰围减少5厘米",
+     "type": "goal",
+     "icon": "golden_apple",
+     "parents": [
+      "b_quit_soda",
+      "b_pull_up"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一套新运动服"
+    },
+    {
+     "id": "b_first_5k",
+     "x": 1,
+     "y": 0,
+     "title": "疾跑模式",
+     "desc": "中途不停，跑完5公里，不限配速",
+     "tip": "双击W就能疾跑，现实里得先买双好鞋。",
+     "type": "task",
+     "icon": "boots",
+     "parents": [
+      "b_warm_up"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "b_10k",
+     "x": 2,
+     "y": 0,
+     "title": "我们需要再远些",
+     "desc": "75分钟内跑完10公里",
+     "tip": "前5公里靠腿，后5公里靠歌单。",
+     "type": "task",
+     "icon": "clock",
+     "parents": [
+      "b_first_5k"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "b_monthly_100k",
+     "x": 3,
+     "y": 0,
+     "title": "跑量拉满",
+     "desc": "一个自然月内累计跑步100公里",
+     "type": "task",
+     "icon": "map",
+     "parents": [
+      "b_10k"
+     ],
+     "xp": 60,
+     "pts": 3,
+     "target": 100,
+     "unit": "公里"
+    },
+    {
+     "id": "b_half_marathon",
+     "x": 4,
+     "y": 0,
+     "title": "第一块奖牌",
+     "desc": "在正式赛事中完赛一场半程马拉松（21.0975公里）",
+     "type": "goal",
+     "icon": "medal",
+     "parents": [
+      "b_monthly_100k"
+     ],
+     "xp": 150,
+     "pts": 7,
+     "reward": "一双新跑鞋"
+    },
+    {
+     "id": "b_full_marathon",
+     "x": 5,
+     "y": 1,
+     "title": "撞墙之后",
+     "desc": "在关门时间内完赛一场全程马拉松（42.195公里）",
+     "tip": "30公里左右会撞墙，翻过去，终点就不远了。",
+     "type": "challenge",
+     "icon": "trophy",
+     "parents": [
+      "b_half_marathon",
+      "b_sleep_30"
+     ],
+     "xp": 400,
+     "pts": 20,
+     "reward": "一块运动手表"
+    },
+    {
+     "id": "b_checkup",
+     "x": 1,
+     "y": 2,
+     "title": "按下F3",
+     "desc": "做一次含血常规、血脂、肝功和心电图的全面体检",
+     "tip": "像按下F3一样，身体的各项数值一目了然。",
+     "type": "task",
+     "icon": "computer",
+     "parents": [
+      "b_warm_up"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "b_early_bird",
+     "x": 2,
+     "y": 2,
+     "title": "跳过黑夜",
+     "desc": "连续7天23:30前放下手机上床，每晚睡满7小时",
+     "tip": "床的正确用法是跳过黑夜，不是刷短视频。",
+     "type": "task",
+     "icon": "moon",
+     "parents": [
+      "b_checkup"
+     ],
+     "xp": 40,
+     "pts": 2,
+     "target": 7,
+     "unit": "天"
+    },
+    {
+     "id": "b_sleep_30",
+     "x": 4,
+     "y": 2,
+     "title": "重生点已设置",
+     "desc": "连续30天23:30前入睡、7:30前起床",
+     "type": "goal",
+     "icon": "bed",
+     "parents": [
+      "b_early_bird"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一个真正好睡的枕头",
+     "target": 30,
+     "unit": "天"
+    },
+    {
+     "id": "b_swim",
+     "x": 1,
+     "y": 3,
+     "title": "如鱼得水",
+     "desc": "学会换气，在泳池里不停歇游完200米",
+     "tip": "气泡条见底之前，记得抬头换气。",
+     "type": "task",
+     "icon": "fish",
+     "parents": [
+      "b_warm_up"
+     ],
+     "xp": 40,
+     "pts": 2
+    }
+   ]
+  },
+  {
+   "id": "mind",
+   "name": "学识",
+   "subtitle": "读过的书，都是附魔台边的书架",
+   "bg": "bookshelf",
+   "icon": "book",
+   "nodes": [
+    {
+     "id": "m_bookshelf",
+     "x": 0,
+     "y": 0,
+     "title": "建造书架",
+     "desc": "列一份年度书单，至少12本",
+     "type": "task",
+     "icon": "scroll",
+     "parents": [
+      "o_mind"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "m_library",
+     "x": 1,
+     "y": -3,
+     "title": "要塞图书馆",
+     "desc": "办一张图书馆借书证，借出第一本书",
+     "tip": "不用扔末影之眼，地图App就能找到。",
+     "type": "task",
+     "icon": "key",
+     "parents": [
+      "m_bookshelf"
+     ],
+     "xp": 25,
+     "pts": 1
+    },
+    {
+     "id": "m_obsidian",
+     "x": 2,
+     "y": -3,
+     "title": "啃下黑曜石",
+     "desc": "读完一部50万字以上的大部头",
+     "tip": "比如《战争与和平》。钻石镐备好了吗？",
+     "type": "task",
+     "icon": "book",
+     "parents": [
+      "m_library"
+     ],
+     "xp": 50,
+     "pts": 2,
+     "hidden": true
+    },
+    {
+     "id": "m_bookworm",
+     "x": 3,
+     "y": -3,
+     "title": "书虫出没",
+     "desc": "一个自然年内读完24本书",
+     "tip": "蠹虫藏在石砖里，书虫藏在书堆里。",
+     "type": "goal",
+     "icon": "lantern",
+     "parents": [
+      "m_obsidian"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一台墨水屏阅读器",
+     "target": 24,
+     "unit": "本"
+    },
+    {
+     "id": "m_quill",
+     "x": 1,
+     "y": -1,
+     "title": "书与笔",
+     "desc": "为读过的书写一篇500字以上的读书笔记",
+     "tip": "MC里的书与笔，签了名才算成书。",
+     "type": "task",
+     "icon": "quill",
+     "parents": [
+      "m_bookshelf"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "m_signed",
+     "x": 2,
+     "y": -1,
+     "title": "签名成书",
+     "desc": "开个博客或公众号，发布第一篇原创文章",
+     "type": "task",
+     "icon": "letter",
+     "parents": [
+      "m_quill"
+     ],
+     "xp": 35,
+     "pts": 2
+    },
+    {
+     "id": "m_blog10",
+     "x": 3,
+     "y": -1,
+     "title": "连载中",
+     "desc": "在博客或公众号累计发布10篇原创文章",
+     "tip": "不求10万+，只求写到第10篇。",
+     "type": "task",
+     "icon": "clock",
+     "parents": [
+      "m_signed"
+     ],
+     "xp": 60,
+     "pts": 3,
+     "target": 10,
+     "unit": "篇"
+    },
+    {
+     "id": "m_course",
+     "x": 1,
+     "y": 1,
+     "title": "网课出师",
+     "desc": "学完一门网课的全部章节并通过结课考核",
+     "tip": "倍速可以，跳着看不算。",
+     "type": "task",
+     "icon": "computer",
+     "parents": [
+      "m_bookshelf"
+     ],
+     "xp": 35,
+     "pts": 2
+    },
+    {
+     "id": "m_cert",
+     "x": 2,
+     "y": 1,
+     "title": "持证上岗",
+     "desc": "考下一张职业证书，如教资、初级会计或CPA单科",
+     "type": "goal",
+     "icon": "medal",
+     "parents": [
+      "m_course"
+     ],
+     "xp": 110,
+     "pts": 5,
+     "reward": "一顿想吃很久的大餐"
+    },
+    {
+     "id": "m_vocab",
+     "x": 1,
+     "y": 3,
+     "title": "单词矿工",
+     "desc": "背单词连续打卡100天",
+     "type": "task",
+     "icon": "pickaxe",
+     "parents": [
+      "m_bookshelf"
+     ],
+     "xp": 40,
+     "pts": 2,
+     "target": 100,
+     "unit": "天"
+    },
+    {
+     "id": "m_speak",
+     "x": 2,
+     "y": 3,
+     "title": "比村民健谈",
+     "desc": "用外语和母语者连续聊满15分钟",
+     "type": "task",
+     "icon": "speech",
+     "parents": [
+      "m_vocab"
+     ],
+     "xp": 50,
+     "pts": 3
+    },
+    {
+     "id": "m_talk",
+     "x": 4,
+     "y": 0,
+     "title": "开讲啦",
+     "desc": "给10人以上做一次30分钟的主题分享",
+     "tip": "这次敲钟，村民不用躲回屋，是来听你讲课。",
+     "type": "goal",
+     "icon": "bell",
+     "parents": [
+      "m_blog10",
+      "m_cert"
+     ],
+     "xp": 140,
+     "pts": 7,
+     "reward": "一件体面的新衬衫"
+    },
+    {
+     "id": "m_babel",
+     "x": 4,
+     "y": 3,
+     "title": "巴别塔",
+     "desc": "考过雅思6.5、托福90或日语N2之一",
+     "tip": "当年塔没盖成，就是因为语言不通。",
+     "type": "challenge",
+     "icon": "grad_cap",
+     "parents": [
+      "m_speak"
+     ],
+     "xp": 380,
+     "pts": 18,
+     "reward": "一张飞往目标语国家的机票"
+    },
+    {
+     "id": "m_enchant",
+     "x": 5,
+     "y": -2,
+     "title": "满级附魔",
+     "desc": "写完一部5万字以上的书稿并公开发布",
+     "tip": "30级经验，15个书架，一本署着你名字的书。",
+     "type": "challenge",
+     "icon": "enchanted_book",
+     "parents": [
+      "m_bookworm",
+      "m_talk"
+     ],
+     "xp": 480,
+     "pts": 24,
+     "reward": "一支心仪已久的钢笔"
+    }
+   ]
+  },
+  {
+   "id": "craft",
+   "name": "技艺",
+   "subtitle": "四块木板，合成万物",
+   "bg": "cobblestone",
+   "icon": "pickaxe",
+   "nodes": [
+    {
+     "id": "c_workbench",
+     "x": 0,
+     "y": 0,
+     "title": "工作台",
+     "desc": "选定一门想学的手艺，备齐入门工具",
+     "tip": "手艺不怕学得晚，就怕工具一直躺在购物车里。",
+     "type": "task",
+     "icon": "chest",
+     "parents": [
+      "o_craft"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "c_signature",
+     "x": 1,
+     "y": -3,
+     "title": "拿手菜",
+     "desc": "练出一道被亲友点名要吃的拿手菜",
+     "type": "task",
+     "icon": "stew",
+     "parents": [
+      "c_workbench"
+     ],
+     "xp": 25,
+     "pts": 1
+    },
+    {
+     "id": "c_recipes",
+     "x": 2,
+     "y": -3,
+     "title": "配方书",
+     "desc": "学会10道不同的菜，每道至少做过2次",
+     "tip": "MC的配方书自动解锁，现实里靠一次次翻车。",
+     "type": "task",
+     "icon": "book",
+     "parents": [
+      "c_signature"
+     ],
+     "xp": 45,
+     "pts": 2,
+     "target": 10,
+     "unit": "道"
+    },
+    {
+     "id": "c_feast",
+     "x": 3,
+     "y": -3,
+     "title": "满汉全席",
+     "desc": "独自做一桌6菜1汤，招待4位以上亲友",
+     "tip": "6菜1汤就够格了，不用真做108道。",
+     "type": "goal",
+     "icon": "cake",
+     "parents": [
+      "c_recipes"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一口称手的铸铁锅"
+    },
+    {
+     "id": "c_nye",
+     "x": 4,
+     "y": -3,
+     "title": "年夜饭掌勺",
+     "desc": "全家年夜饭由你主厨，至少10道菜",
+     "tip": "鱼要整条上桌，年年有余。",
+     "type": "challenge",
+     "icon": "fish",
+     "parents": [
+      "c_feast"
+     ],
+     "xp": 380,
+     "pts": 18,
+     "reward": "一把专业主厨刀",
+     "hidden": true
+    },
+    {
+     "id": "c_anvil",
+     "x": 1,
+     "y": -1,
+     "title": "铁砧",
+     "desc": "不叫师傅，自己修好一件坏掉的东西",
+     "type": "task",
+     "icon": "hammer",
+     "parents": [
+      "c_workbench"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "c_license",
+     "x": 2,
+     "y": -1,
+     "title": "新手上路",
+     "desc": "考过科目一到四，拿到C1驾照",
+     "tip": "倒车入库，比把矿车停在铁轨尽头难多了。",
+     "type": "goal",
+     "icon": "key",
+     "parents": [
+      "c_anvil"
+     ],
+     "xp": 120,
+     "pts": 5,
+     "reward": "一副好看的墨镜"
+    },
+    {
+     "id": "c_hello",
+     "x": 1,
+     "y": 1,
+     "title": "你好，世界",
+     "desc": "跟着教程写完并跑通一个100行的程序",
+     "type": "task",
+     "icon": "computer",
+     "parents": [
+      "c_workbench"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "c_redstone",
+     "x": 2,
+     "y": 1,
+     "title": "命令方块",
+     "desc": "写个脚本，把一件重复的事变成自动的",
+     "type": "task",
+     "icon": "torch",
+     "parents": [
+      "c_hello"
+     ],
+     "xp": 45,
+     "pts": 2
+    },
+    {
+     "id": "c_contraption",
+     "x": 3,
+     "y": 0,
+     "title": "红石机关",
+     "desc": "用开发板做个能用的小装置，如自动浇花",
+     "tip": "烙铁和代码一起上，花终于不会渴死了。",
+     "type": "goal",
+     "icon": "sapling",
+     "parents": [
+      "c_anvil",
+      "c_redstone"
+     ],
+     "xp": 150,
+     "pts": 7,
+     "reward": "一套好用的螺丝刀组"
+    },
+    {
+     "id": "c_ship",
+     "x": 4,
+     "y": 1,
+     "title": "上线了！",
+     "desc": "做个App或网站上线，攒够100个真实用户",
+     "tip": "第一个陌生用户出现时，比挖到钻石还激动。",
+     "type": "challenge",
+     "icon": "diamond",
+     "parents": [
+      "c_redstone"
+     ],
+     "xp": 450,
+     "pts": 22,
+     "reward": "一把心仪的机械键盘"
+    },
+    {
+     "id": "c_noteblock",
+     "x": 1,
+     "y": 3,
+     "title": "音符盒",
+     "desc": "选一件乐器，完整演奏出第一首曲子",
+     "type": "task",
+     "icon": "bell",
+     "parents": [
+      "c_workbench"
+     ],
+     "xp": 25,
+     "pts": 1
+    },
+    {
+     "id": "c_practice",
+     "x": 2,
+     "y": 3,
+     "title": "邻居听见了",
+     "desc": "累计练习乐器100天，每次至少20分钟",
+     "tip": "练到第30天，邻居会从敲墙改成点歌。",
+     "type": "task",
+     "icon": "clock",
+     "parents": [
+      "c_noteblock"
+     ],
+     "xp": 55,
+     "pts": 3,
+     "target": 100,
+     "unit": "天"
+    },
+    {
+     "id": "c_stage",
+     "x": 3,
+     "y": 3,
+     "title": "现场版",
+     "desc": "在10人以上面前完整演奏3首曲子",
+     "tip": "错一个音没人听出来，停下来大家才会发现。",
+     "type": "goal",
+     "icon": "music_disc",
+     "parents": [
+      "c_practice"
+     ],
+     "xp": 130,
+     "pts": 6,
+     "reward": "一张想去很久的音乐节门票"
+    }
+   ]
+  },
+  {
+   "id": "wealth",
+   "name": "财富",
+   "subtitle": "每颗绿宝石都该有去处",
+   "bg": "sandstone",
+   "icon": "gold_ingot",
+   "nodes": [
+    {
+     "id": "w_payday",
+     "x": 0,
+     "y": 1,
+     "title": "第一颗绿宝石",
+     "desc": "收到人生第一份全职工资的到账短信",
+     "tip": "截图留念，以后涨薪了回来看看。",
+     "type": "task",
+     "icon": "emerald",
+     "parents": [
+      "o_wealth"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "w_budget",
+     "x": 1,
+     "y": -1,
+     "title": "月底不吃土",
+     "desc": "定好下个月的预算，月底一分没超",
+     "tip": "MC里泥土管够，现实里还是别吃了。",
+     "type": "task",
+     "icon": "scroll",
+     "parents": [
+      "w_payday"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "w_probation",
+     "x": 1,
+     "y": 1,
+     "title": "新手保护期结束",
+     "desc": "熬过试用期，拿到转正通知",
+     "type": "task",
+     "icon": "key",
+     "parents": [
+      "w_payday"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "w_save",
+     "x": 2,
+     "y": -2,
+     "title": "喂饱小猪",
+     "desc": "连续3个月，工资一到账就先存下20%",
+     "type": "task",
+     "icon": "pig",
+     "parents": [
+      "w_budget"
+     ],
+     "xp": 50,
+     "pts": 3,
+     "target": 3,
+     "unit": "个月"
+    },
+    {
+     "id": "w_debt",
+     "x": 2,
+     "y": 0,
+     "title": "逃离下界",
+     "desc": "还清花呗和信用卡分期，之后6个月不再借",
+     "tip": "下界很热，利息更热。",
+     "type": "goal",
+     "icon": "potion",
+     "parents": [
+      "w_budget"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一顿不用分期的火锅",
+     "target": 6,
+     "unit": "个月"
+    },
+    {
+     "id": "w_market",
+     "x": 2,
+     "y": 1,
+     "title": "看看村民报价",
+     "desc": "查清自己岗位的市场薪资，更新一版简历",
+     "type": "task",
+     "icon": "quill",
+     "parents": [
+      "w_probation"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "w_insure",
+     "x": 3,
+     "y": -2,
+     "title": "不死图腾",
+     "desc": "给自己配齐百万医疗险和意外险",
+     "tip": "游戏里图腾靠打唤魔者，现实里靠每年几百块。",
+     "type": "task",
+     "icon": "heart",
+     "parents": [
+      "w_save"
+     ],
+     "xp": 50,
+     "pts": 3
+    },
+    {
+     "id": "w_ender",
+     "x": 3,
+     "y": -1,
+     "title": "末影箱",
+     "desc": "存够6个月生活费的应急金，单独存放不动",
+     "tip": "末影箱里的东西，死亡也不会掉。",
+     "type": "goal",
+     "icon": "chest",
+     "parents": [
+      "w_save",
+      "w_debt"
+     ],
+     "xp": 140,
+     "pts": 7,
+     "reward": "一张演唱会门票"
+    },
+    {
+     "id": "w_raise",
+     "x": 3,
+     "y": 1,
+     "title": "工资条附魔",
+     "desc": "谈成一次加薪或跳槽，月薪涨15%以上",
+     "tip": "附魔要经验等级，谈加薪要一张业绩清单。",
+     "type": "goal",
+     "icon": "enchanted_book",
+     "parents": [
+      "w_market"
+     ],
+     "xp": 150,
+     "pts": 7,
+     "reward": "一副降噪耳机"
+    },
+    {
+     "id": "w_invest",
+     "x": 4,
+     "y": -1,
+     "title": "开荒垦地",
+     "desc": "第一次买入指数基金，金额不少于1000元",
+     "tip": "第一笔钱种下去，剩下的交给时间。",
+     "type": "task",
+     "icon": "gold_ingot",
+     "parents": [
+      "w_ender"
+     ],
+     "xp": 60,
+     "pts": 3
+    },
+    {
+     "id": "w_side",
+     "x": 4,
+     "y": 1,
+     "title": "第二条矿脉",
+     "desc": "靠主业以外的手艺，累计赚到1000元",
+     "type": "task",
+     "icon": "pickaxe",
+     "parents": [
+      "w_raise"
+     ],
+     "xp": 60,
+     "pts": 3
+    },
+    {
+     "id": "w_dca",
+     "x": 5,
+     "y": -2,
+     "title": "红石时钟",
+     "desc": "每月自动定投，坚持满12个月不中断",
+     "tip": "设好就别天天看，红石电路自己会跑。",
+     "type": "goal",
+     "icon": "clock",
+     "parents": [
+      "w_invest"
+     ],
+     "xp": 160,
+     "pts": 8,
+     "reward": "一台新游戏机",
+     "target": 12,
+     "unit": "个月"
+    },
+    {
+     "id": "w_100k",
+     "x": 5,
+     "y": 0,
+     "title": "满箱钻石",
+     "desc": "存款加投资扣掉负债，第一次突破10万元",
+     "type": "challenge",
+     "icon": "diamond",
+     "parents": [
+      "w_invest",
+      "w_side"
+     ],
+     "xp": 500,
+     "pts": 25,
+     "reward": "犹豫了一年没舍得买的大件"
+    }
+   ]
+  },
+  {
+   "id": "bond",
+   "name": "羁绊",
+   "subtitle": "生存模式，组队更好过",
+   "bg": "planks",
+   "icon": "poppy",
+   "nodes": [
+    {
+     "id": "r_multiplayer",
+     "x": 0,
+     "y": 0,
+     "title": "多人游戏",
+     "desc": "和家人或朋友吃一顿饭，手机全程扣在桌上",
+     "tip": "第一个拿起手机的人买单。",
+     "type": "task",
+     "icon": "stew",
+     "parents": [
+      "o_bond"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "r_weekly_call",
+     "x": 1,
+     "y": -2,
+     "title": "周日例会",
+     "desc": "连续8周，每周给家里打一通10分钟以上的电话",
+     "type": "task",
+     "icon": "house",
+     "parents": [
+      "r_multiplayer"
+     ],
+     "xp": 40,
+     "pts": 2,
+     "target": 8,
+     "unit": "周"
+    },
+    {
+     "id": "r_gathering",
+     "x": 1,
+     "y": 0,
+     "title": "摇人成功",
+     "desc": "牵头组织一次5人以上的线下聚会，拉群订位全包",
+     "tip": "别问“大家什么时候有空”，直接给两个时间选。",
+     "type": "task",
+     "icon": "campfire",
+     "parents": [
+      "r_multiplayer"
+     ],
+     "xp": 35,
+     "pts": 2,
+     "reward": "一杯全糖奶茶"
+    },
+    {
+     "id": "r_blood_donation",
+     "x": 1,
+     "y": 2,
+     "title": "一腔热血",
+     "desc": "完成一次无偿献血，全血或成分血都算",
+     "type": "task",
+     "icon": "potion",
+     "parents": [
+      "r_multiplayer"
+     ],
+     "xp": 35,
+     "pts": 2,
+     "tip": "身体条件不适合献血的话，去献血点做一次志愿者也算。"
+    },
+    {
+     "id": "r_letter_home",
+     "x": 2,
+     "y": -2,
+     "title": "见字如面",
+     "desc": "给家人手写一封500字以上的信，并寄出去",
+     "tip": "电话里说不出口的，就交给纸和笔。",
+     "type": "task",
+     "icon": "letter",
+     "parents": [
+      "r_weekly_call"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "r_new_friends",
+     "x": 2,
+     "y": -1,
+     "title": "新村民入住",
+     "desc": "在兴趣活动里认识3位新朋友，每位都再约过一次",
+     "tip": "桌游局、羽毛球群、读书会，都是村民刷新点。",
+     "type": "task",
+     "icon": "speech",
+     "parents": [
+      "r_gathering"
+     ],
+     "xp": 45,
+     "pts": 2,
+     "target": 3,
+     "unit": "位"
+    },
+    {
+     "id": "r_birthday_surprise",
+     "x": 2,
+     "y": 0,
+     "title": "蛋糕不是谎言",
+     "desc": "为一位好友策划生日惊喜，对方事先毫不知情",
+     "tip": "最难的不是布置，是拉群时别把寿星拉进来。",
+     "type": "task",
+     "icon": "cake",
+     "parents": [
+      "r_gathering"
+     ],
+     "xp": 45,
+     "pts": 2
+    },
+    {
+     "id": "r_volunteer",
+     "x": 2,
+     "y": 2,
+     "title": "村庄英雄",
+     "desc": "累计志愿服务20小时，以志愿平台记录为准",
+     "type": "goal",
+     "icon": "bell",
+     "parents": [
+      "r_blood_donation"
+     ],
+     "xp": 100,
+     "pts": 5,
+     "reward": "一场想看的电影",
+     "target": 20,
+     "unit": "小时"
+    },
+    {
+     "id": "r_family_trip",
+     "x": 3,
+     "y": -2,
+     "title": "全家出动",
+     "desc": "带家人出游至少3天，攻略、订票、订房全由你负责",
+     "type": "goal",
+     "icon": "map",
+     "parents": [
+      "r_letter_home"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "冲印一本旅行相册"
+    },
+    {
+     "id": "r_confession",
+     "x": 3,
+     "y": -1,
+     "title": "直球出击",
+     "desc": "主动向喜欢的人表白一次，结果如何都算数",
+     "tip": "末影人不能直视，喜欢的人可以。",
+     "type": "task",
+     "icon": "poppy",
+     "parents": [
+      "r_new_friends"
+     ],
+     "xp": 55,
+     "pts": 3
+    },
+    {
+     "id": "r_diamond_friend",
+     "x": 3,
+     "y": 0,
+     "title": "钻石之交",
+     "desc": "和一位朋友相识满10年，一起正经庆祝一次",
+     "type": "goal",
+     "icon": "diamond",
+     "parents": [
+      "r_birthday_surprise"
+     ],
+     "xp": 130,
+     "pts": 6,
+     "reward": "两张演唱会门票，带上老友"
+    },
+    {
+     "id": "r_say_it",
+     "x": 4,
+     "y": -3,
+     "title": "说出口",
+     "desc": "当面对家人说出“我爱你”，打字不算",
+     "tip": "说完冷场三秒属于正常现象，不是bug。",
+     "type": "task",
+     "icon": "heart",
+     "parents": [
+      "r_family_trip",
+      "r_letter_home"
+     ],
+     "xp": 60,
+     "pts": 3,
+     "hidden": true
+    },
+    {
+     "id": "r_anniversary",
+     "x": 4,
+     "y": -1,
+     "title": "公转一周",
+     "desc": "恋爱满1年，和TA过第一个周年纪念日",
+     "tip": "换算成MC时间，你们已经看过26280次日出了。",
+     "type": "goal",
+     "icon": "clock",
+     "parents": [
+      "r_confession"
+     ],
+     "xp": 150,
+     "pts": 8,
+     "reward": "一顿烛光晚餐"
+    },
+    {
+     "id": "r_meet_parents",
+     "x": 5,
+     "y": -2,
+     "title": "合并存档",
+     "desc": "带恋人正式见过双方父母，两家人同桌吃一顿饭",
+     "tip": "从此两个存档，共用一个出生点。",
+     "type": "challenge",
+     "icon": "ring",
+     "parents": [
+      "r_family_trip",
+      "r_anniversary"
+     ],
+     "xp": 400,
+     "pts": 20,
+     "reward": "一场两个人的旅行"
+    }
+   ]
+  },
+  {
+   "id": "road",
+   "name": "远行",
+   "subtitle": "世界很大，区块还没加载完",
+   "bg": "end_stone",
+   "icon": "compass",
+   "nodes": [
+    {
+     "id": "e_weekend_escape",
+     "x": 0,
+     "y": 0,
+     "title": "换个生物群系",
+     "desc": "利用一个周末去另一座城市，至少住一晚",
+     "type": "task",
+     "icon": "compass",
+     "parents": [
+      "o_road"
+     ],
+     "xp": 20,
+     "pts": 1
+    },
+    {
+     "id": "e_see_the_sea",
+     "x": 1,
+     "y": -2,
+     "title": "海洋之心",
+     "desc": "亲眼看一次大海，光脚踩进海水里",
+     "tip": "内陆长大的孩子，第一次看海都会愣住几秒。",
+     "type": "task",
+     "icon": "boat",
+     "parents": [
+      "e_weekend_escape"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "e_spontaneous",
+     "x": 1,
+     "y": -1,
+     "title": "说走就走",
+     "desc": "从决定出发到坐上车，间隔不超过24小时",
+     "tip": "末影珍珠一扔就走，行李可以在路上买。",
+     "type": "task",
+     "icon": "clock",
+     "parents": [
+      "e_weekend_escape"
+     ],
+     "xp": 40,
+     "pts": 2,
+     "hidden": true
+    },
+    {
+     "id": "e_sleeper_train",
+     "x": 1,
+     "y": 0,
+     "title": "坐上矿车",
+     "desc": "坐一趟过夜的卧铺火车，在车厢里睡到天亮",
+     "tip": "上铺最安静，下铺最热闹，中铺最尴尬。",
+     "type": "task",
+     "icon": "bed",
+     "parents": [
+      "e_weekend_escape"
+     ],
+     "xp": 30,
+     "pts": 1
+    },
+    {
+     "id": "e_campfire",
+     "x": 1,
+     "y": 2,
+     "title": "篝火之夜",
+     "desc": "在野外或营地搭帐篷，露营过一夜",
+     "tip": "苦力怕不会来，但蚊子一定会来。",
+     "type": "task",
+     "icon": "campfire",
+     "parents": [
+      "e_weekend_escape"
+     ],
+     "xp": 30,
+     "pts": 2
+    },
+    {
+     "id": "e_solo_trip",
+     "x": 2,
+     "y": 0,
+     "title": "单人游戏",
+     "desc": "独自完成一次3天以上的旅行，行程全靠自己安排",
+     "tip": "不用迁就任何人，连迷路都是自己选的。",
+     "type": "task",
+     "icon": "lantern",
+     "parents": [
+      "e_sleeper_train"
+     ],
+     "xp": 50,
+     "pts": 2
+    },
+    {
+     "id": "e_summit_sunrise",
+     "x": 2,
+     "y": 2,
+     "title": "凌晨四点的山顶",
+     "desc": "夜爬或早起登顶一座山，在山顶看到日出",
+     "tip": "带件厚外套，山顶的凌晨比你想的冷。",
+     "type": "task",
+     "icon": "torch",
+     "parents": [
+      "e_campfire"
+     ],
+     "xp": 40,
+     "pts": 2
+    },
+    {
+     "id": "e_abroad",
+     "x": 3,
+     "y": -2,
+     "title": "穿越传送门",
+     "desc": "办好护照，完成人生第一次出国旅行",
+     "type": "goal",
+     "icon": "ender_eye",
+     "parents": [
+      "e_see_the_sea",
+      "e_solo_trip"
+     ],
+     "xp": 140,
+     "pts": 7,
+     "reward": "免税店挑一样小东西"
+    },
+    {
+     "id": "e_four_seasons",
+     "x": 3,
+     "y": 0,
+     "title": "四季漫游",
+     "desc": "一年内春夏秋冬各去一座没去过的城市",
+     "type": "goal",
+     "icon": "sapling",
+     "parents": [
+      "e_solo_trip"
+     ],
+     "xp": 100,
+     "pts": 5,
+     "reward": "一只新的登机箱",
+     "target": 4,
+     "unit": "座城市"
+    },
+    {
+     "id": "e_trek",
+     "x": 3,
+     "y": 2,
+     "title": "用脚丈量",
+     "desc": "背包走完一条20公里以上的山野徒步线路",
+     "type": "task",
+     "icon": "boots",
+     "parents": [
+      "e_summit_sunrise"
+     ],
+     "xp": 50,
+     "pts": 3
+    },
+    {
+     "id": "e_aurora",
+     "x": 4,
+     "y": -2,
+     "title": "极光之下",
+     "desc": "去高纬度地区，亲眼看到一次极光",
+     "tip": "极光看太阳脸色，多住几晚胜算更大。",
+     "type": "challenge",
+     "icon": "nether_star",
+     "parents": [
+      "e_abroad"
+     ],
+     "xp": 350,
+     "pts": 18,
+     "reward": "从极光下给自己寄张明信片"
+    },
+    {
+     "id": "e_provinces",
+     "x": 4,
+     "y": 0,
+     "title": "点亮地图",
+     "desc": "累计去过10个省份（含直辖市、自治区），每个至少住一晚",
+     "tip": "空地图要自己走过才会画出来，刮刮乐地图也一样。",
+     "type": "goal",
+     "icon": "map",
+     "parents": [
+      "e_four_seasons"
+     ],
+     "xp": 150,
+     "pts": 7,
+     "reward": "一张刮刮乐中国地图",
+     "target": 10,
+     "unit": "个省份"
+    },
+    {
+     "id": "e_highland",
+     "x": 4,
+     "y": 2,
+     "title": "云端之上",
+     "desc": "抵达海拔4000米以上的地方，并在高原住一晚",
+     "type": "goal",
+     "icon": "elytra",
+     "parents": [
+      "e_trek"
+     ],
+     "xp": 120,
+     "pts": 6,
+     "reward": "一件好冲锋衣",
+     "tip": "高反不丢人：慢慢走、多喝水，头疼加重就下撤。"
+    },
+    {
+     "id": "e_road_trip",
+     "x": 5,
+     "y": 1,
+     "title": "一路向西",
+     "desc": "自驾或骑行完成一次全程2000公里以上的长途旅行",
+     "tip": "318国道在等你：成都出发，拉萨见。",
+     "type": "challenge",
+     "icon": "trophy",
+     "parents": [
+      "e_provinces",
+      "e_highland"
+     ],
+     "xp": 480,
+     "pts": 24,
+     "reward": "一台运动相机"
+    }
+   ]
+  }
+ ]
+}
