@@ -24,6 +24,37 @@ describe('UpdateBar', () => {
     expect(usePwa.getState().needRefresh).toBe(false);
   });
 
+  it('× hands keyboard focus back to where it came from, not to <body>', () => {
+    render(<><button type="button">之前</button><button type="button" id="btnMenu">菜单</button><UpdateBar /></>);
+    act(() => usePwa.setState({ needRefresh: true }));
+    const before = screen.getByRole('button', { name: '之前' });
+    before.focus();
+    const x = screen.getByRole('button', { name: '先不更新' });
+    x.focus();
+    expect(document.activeElement).toBe(x);
+    fireEvent.click(x);
+    expect(document.querySelector('.updbar')).toBeNull();
+    expect(document.activeElement).toBe(before);
+  });
+
+  it('× falls back to the menu button when focus came from nowhere', () => {
+    render(<><button type="button" id="btnMenu">菜单</button><UpdateBar /></>);
+    act(() => usePwa.setState({ needRefresh: true }));
+    const x = screen.getByRole('button', { name: '先不更新' });
+    x.focus();
+    fireEvent.click(x);
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '菜单' }));
+  });
+
+  it('× leaves focus alone when it was not in the bar (a mouse or touch press)', () => {
+    render(<><input aria-label="笔记" /><button type="button" id="btnMenu">菜单</button><UpdateBar /></>);
+    act(() => usePwa.setState({ needRefresh: true }));
+    const note = screen.getByRole('textbox', { name: '笔记' });
+    note.focus();
+    fireEvent.click(screen.getByRole('button', { name: '先不更新' }));
+    expect(document.activeElement).toBe(note);
+  });
+
   it('announces itself through a live region that exists before the text arrives', () => {
     render(<UpdateBar />);
     const live = screen.getByRole('status');

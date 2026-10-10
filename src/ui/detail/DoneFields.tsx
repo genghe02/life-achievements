@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { isDateStr, isFuture, today } from '../../domain/dates';
 import { LIMITS } from '../../store/inputs';
 import { useStore } from '../../store/store';
@@ -8,16 +8,22 @@ interface Props {
   /** The stored date and note (the fields keep their own drafts while being edited). */
   date: string;
   note: string;
+  /** Set to a function that saves the note being typed (the undo button calls it first). */
+  flushRef?: RefObject<(() => void) | null>;
 }
 
 /** 达成日期 and 感想 of a done achievement, saved on change (date) and on blur (note). */
-export function DoneFields({ id, date, note }: Props) {
+export function DoneFields({ id, date, note, flushRef }: Props) {
   const [dateDraft, setDateDraft] = useState(date);
   const [noteDraft, setNoteDraft] = useState(note);
   const [seen, setSeen] = useState({ date, note });
   const [err, setErr] = useState('');
   const [savedAt, setSavedAt] = useState(0);
   const noteRef = useRef(note);
+  // The stored note the draft started from, and whether it was typed in since. A draft is only
+  // saved over the note it started from: an import or another tab that replaced the note wins.
+  const baseRef = useRef(note);
+  const dirtyRef = useRef(false);
 
   // the stored values changed (our own save, or an import): follow them unless it is our draft
   if (seen.date !== date || seen.note !== note) {
@@ -30,6 +36,12 @@ export function DoneFields({ id, date, note }: Props) {
     noteRef.current = noteDraft;
   }, [noteDraft]);
 
+  // the stored note changed (our save, or an import): the draft has followed it, see above
+  useLayoutEffect(() => {
+    baseRef.current = note;
+    dirtyRef.current = false;
+  }, [note]);
+
   useEffect(() => {
     if (!savedAt) return;
     const t = setTimeout(() => setSavedAt(0), 2500);
@@ -40,9 +52,7 @@ export function DoneFields({ id, date, note }: Props) {
   // field focused when a button is tapped) and when the page is hidden or closed.
   useEffect(() => {
     const flush = () => {
-      const cur = useStore.getState().data.done[id];
-      const v = noteRef.current;
-      if (cur && v.trim() !== (cur.note ?? '')) useStore.getState().setDoneInfo(id, { note: v });
+      writeNote();
     };
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') flush();
@@ -53,12 +63,16 @@ export function DoneFields({ id, date, note }: Props) {
     // at the target.
     window.addEventListener('visibilitychange', onVisibility, true);
     window.addEventListener('pagehide', flush, true);
+    if (flushRef) flushRef.current = flush;
     return () => {
       window.removeEventListener('visibilitychange', onVisibility, true);
       window.removeEventListener('pagehide', flush, true);
+      if (flushRef?.current === flush) flushRef.current = null;
       flush();
     };
-  }, [id]);
+    // writeNote only reads refs and the store
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, flushRef]);
 
   /** `final` on blur: an incomplete or invalid date is reported and reverted. While typing, only a valid date is saved. */
   const saveDate = (v: string, final: boolean) => {
@@ -78,11 +92,27 @@ export function DoneFields({ id, date, note }: Props) {
     }
   };
 
-  const saveNote = () => {
+  /** Save the draft if it was typed in and the stored note is still the one it started from. */
+  function writeNote() {
     const cur = useStore.getState().data.done[id];
     const v = noteRef.current;
-    if (!cur || v.trim() === (cur.note ?? '')) return;
+    if (!cur || !dirtyRef.current) return null;
+    if ((cur.note ?? '') !== baseRef.current) {
+      dirtyRef.current = false;
+      return null;
+    }
+    if (v.trim() === (cur.note ?? '')) return null;
     const r = useStore.getState().setDoneInfo(id, { note: v });
+    if (r.ok) {
+      baseRef.current = useStore.getState().data.done[id]?.note ?? '';
+      dirtyRef.current = false;
+    }
+    return r;
+  }
+
+  const saveNote = () => {
+    const r = writeNote();
+    if (!r) return;
     if (r.ok) {
       setErr('');
       setSavedAt(Date.now());
@@ -118,6 +148,7 @@ export function DoneFields({ id, date, note }: Props) {
           value={noteDraft}
           onChange={e => {
             noteRef.current = e.target.value;
+            dirtyRef.current = true;
             setNoteDraft(e.target.value);
             setSavedAt(0);
           }}

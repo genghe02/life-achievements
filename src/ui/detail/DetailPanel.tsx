@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { byId } from '../../domain/rules';
 import { useStore } from '../../store/store';
+import { repositionToasts } from '../fx/toastQueue';
 import { usePhone } from '../hooks/media';
 import { useUi } from '../uiStore';
 import { AreaOverview } from './AreaOverview';
@@ -58,6 +59,11 @@ export function DetailPanel() {
     box.scrollTop = 0;
     if (takeTitleFocus(nodeOf(shown))) box.querySelector<HTMLElement>('.dh h2')?.focus({ preventScroll: true });
   }, [key, shown]);
+
+  // toasts already showing keep clear of the sheet or dock that just opened (and move back after)
+  useLayoutEffect(() => {
+    if (phone) repositionToasts();
+  }, [open, phone]);
 
   // The sheet closed while focus was inside it: hand focus back to the achievement on the tree (or
   // the 概览 button), else to the tree itself. Not when it "closed" by turning into the desktop column.

@@ -37,6 +37,36 @@ describe('AreaTabs', () => {
     act(() => { fireEvent.keyDown(screen.getAllByRole('tab')[0], { key: 'ArrowLeft' }); });
     expect(useStore.getState().areaId).toBe(areas[areas.length - 1].id);
   });
+
+  it('scrolls the row sideways with a plain mouse wheel when it overflows', () => {
+    render(<AreaTabs />);
+    const nav = screen.getByRole('navigation', { name: '人生领域' });
+    const size = (scrollWidth: number, clientWidth: number) => {
+      Object.defineProperty(nav, 'scrollWidth', { configurable: true, value: scrollWidth });
+      Object.defineProperty(nav, 'clientWidth', { configurable: true, value: clientWidth });
+    };
+    const wheel = (init: WheelEventInit) => fireEvent(nav, new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init }));
+
+    // fits: the wheel is left alone
+    size(600, 600);
+    expect(wheel({ deltaY: 100 })).toBe(true);
+    expect(nav.scrollLeft).toBe(0);
+
+    size(1358, 1248);
+    expect(wheel({ deltaY: 100 })).toBe(false);
+    expect(nav.scrollLeft).toBe(100);
+    // clamped at the end, and at the end the event is not swallowed
+    expect(wheel({ deltaY: 100 })).toBe(false);
+    expect(nav.scrollLeft).toBe(110);
+    expect(wheel({ deltaY: 100 })).toBe(true);
+    // line mode (Firefox) counts lines
+    expect(wheel({ deltaY: -1, deltaMode: WheelEvent.DOM_DELTA_LINE })).toBe(false);
+    expect(nav.scrollLeft).toBe(70);
+    // sideways input and ctrl+wheel (zoom) pass through
+    expect(wheel({ deltaX: 30, deltaY: 10 })).toBe(true);
+    expect(wheel({ deltaY: 100, ctrlKey: true })).toBe(true);
+    expect(nav.scrollLeft).toBe(70);
+  });
 });
 
 describe('WindowHead', () => {

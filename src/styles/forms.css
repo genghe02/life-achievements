@@ -31,7 +31,10 @@ fieldset.field { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
 .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .seg label:has(input:checked) { background: #6f6f6f; color: #fff; text-shadow: 1px 1px 0 #333; box-shadow: inset 0 0 0 2px #fff; }
 .seg label:has(input:focus-visible) { outline: 2px solid #000; outline-offset: 1px; }
-.seg label:has(input:disabled) { cursor: not-allowed; opacity: .55; }
+/* not allowed (a prerequisite that would make a loop or does not fit): flat and pale instead of
+   see-through, so the name stays readable (#4a4a4a on the window face is 5.2:1) */
+.seg label:has(input:disabled) { cursor: not-allowed; background: var(--face); color: var(--ink-soft); box-shadow: inset 0 0 0 2px #9a9a9a; }
+.seg label:has(input:disabled) .slot { opacity: .5; }
 .seg img { width: 26px; height: 26px; }
 .seg .mini img { width: 16px; height: 16px; }
 /* background swatches in the area editor: <span class="swatch" style="background-image: url(texture)"> */

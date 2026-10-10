@@ -3,6 +3,10 @@
    text are drawn above them. */
 .toasts { position: fixed; z-index: 60; top: calc(66px + var(--safe-t)); right: 16px; width: 320px; max-width: calc(100vw - 32px);
   display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+/* An open modal shows what happened itself (and the ones that toast after closing close first), so
+   toasts go under its backdrop instead of over its content; an error toast (data changed in another
+   window) has news the modal does not show, so it stays on top. Orbs and floating text stay on top. */
+:root:has(.modal) .toasts:not(:has(.k-error)) { z-index: 39; }
 .toast { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; background: var(--toast); clip-path: var(--notch);
   box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--toast-edge); animation: tin .4s cubic-bezier(.2, .8, .3, 1) both; }
 .toast.out { animation: tout .35s ease-in both; }
@@ -29,3 +33,5 @@
 .updbar > span { min-width: 0; }
 .updbar b { font-weight: 400; color: var(--t-yellow); text-shadow: 2px 2px 0 #3f3f15; }
 @keyframes updin { from { transform: translate(-50%, calc(100% + 24px)); } }
+/* it waits under an open modal instead of covering the modal's title (phones) or its action row */
+:root:has(.modal) .updbar { z-index: 39; }

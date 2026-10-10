@@ -10,6 +10,7 @@ import { DEF_PTS, DEF_XP, levelOf, totals } from '../domain/level';
 import {
   byId,
   childrenOf,
+  displayTitle,
   isDone,
   nodesOfArea,
   statusOf,
@@ -21,7 +22,7 @@ import type { Achievement, BackupFile, CompleteResult, DoneInfo, LifeData, Rewar
 import { parseBackup } from '../domain/validate';
 import type { AppStore } from './contract';
 import { LIMITS } from './inputs';
-import { defaultPersistence, type Persistence } from './persist';
+import { defaultPersistence, type ExternalChange, type Persistence } from './persist';
 
 export const MSG = {
   noNode: '找不到这个进度，刷新后再试。',
@@ -53,8 +54,9 @@ export const MSG = {
   rootParent: '起点进度只能选其他领域的进度作为前置。',
   cycle: '这样前置关系会绕成一个圈，换一个前置试试。',
   moveArea: '进度不能换到别的领域。',
-  noRoom: '这组前置进度离得太远，树上放不下新进度。换一组靠得近的前置试试。',
+  noRoom: '这组前置进度离得太远，树上放不下这个进度。换一组靠得近的前置试试。',
   noRoomOne: '这个进度后面挤满了，放不下新进度。先点「整理」挪开旁边的进度，再试试。',
+  noRoomEditOne: (name: string) => `「${name}」后面挤满了，放不下这个进度。换个前置，或关掉窗口先点「整理」腾出位置。`,
   deleteRoot: '起点进度不能删除，可以删除整个领域。',
   deleteDeps: (names: string) => `先删除或修改${names}，它们把这个进度当作前置。`,
   deleteDone: '先撤销完成，再删除这个进度。',
@@ -75,13 +77,17 @@ export const MSG = {
 } as const;
 
 type StorePersistence = Pick<Persistence, 'loadData' | 'loadUi' | 'saveData' | 'saveUi'> &
-  Partial<Pick<Persistence, 'setLastBackup' | 'listSnapshots' | 'loadSnapshot'>>;
+  Partial<
+    Pick<Persistence, 'setLastBackup' | 'listSnapshots' | 'loadSnapshot' | 'keepBeforeReplace' | 'onExternalChange'>
+  >;
 
 export interface StoreDeps {
   /** Defaults to the app's IndexedDB persistence. */
   persist?: StorePersistence;
   /** Clock for dates and timestamps. */
   now?: () => Date;
+  /** The data was replaced by a newer document another tab saved; `lost`: changes made here were not saved. */
+  onExternal?: (lost: boolean) => void;
 }
 
 const err = (error: string) => ({ ok: false as const, error });
@@ -92,6 +98,18 @@ const isIntIn = (v: unknown, lo: number, hi: number): v is number =>
   typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
 /** An optional number field: an emptied input (undefined, null or NaN from valueAsNumber) counts as not given. */
 const given = (v: number | null | undefined): v is number => v !== undefined && v !== null && !Number.isNaN(v);
+
+/** Why undo(id) would be refused right now, or null when it would go ahead. */
+export function undoProblem(data: LifeData, id: string): string | null {
+  const n = byId(data).get(id);
+  if (!n) return MSG.noNode;
+  if (!isDone(data, id)) return MSG.notDone;
+  const blockers = undoBlockers(data, id);
+  if (blockers.length) return MSG.undoBlocked(quoteAll(blockers.map(b => b.title)));
+  const em = totals(data).emeralds;
+  if (n.pts > 0 && em < n.pts) return MSG.undoSpent(n.pts - em);
+  return null;
+}
 
 /** Keep counter values consistent with a node's (possibly changed) target. */
 function fixCounter(data: LifeData, node: Achievement): Pick<LifeData, 'done' | 'progress'> {
@@ -137,6 +155,25 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
     };
 
     let initP: Promise<void> | null = null;
+    /** A newer document another tab saved while init() was still reading. */
+    let early: LifeData | null = null;
+
+    /** Another tab saved a newer document: show it (persistence no longer writes over it). */
+    const adopt = (e: ExternalChange) => {
+      if (get().phase === 'loading') {
+        early = e.data;
+        return;
+      }
+      const parsed = parseBackup(e.data, now());
+      if (!parsed.ok) {
+        console.error('life-achievements: data from another tab is invalid:', parsed.error);
+        return;
+      }
+      const cur = get().areaId;
+      const areaId = parsed.data.areas.some(a => a.id === cur) ? cur : parsed.data.areas[0].id;
+      set({ phase: 'ready', data: parsed.data, areaId });
+      deps.onExternal?.(e.lost);
+    };
 
     /** The newest daily snapshot that still validates, or null. */
     const recoverFromSnapshot = async () => {
@@ -195,6 +232,7 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
 
       init() {
         initP ??= (async () => {
+          persist().onExternalChange?.(adopt);
           // read separately: a failed read of the remembered area must not cost the data
           const [savedRes, uiRes] = await Promise.allSettled([persist().loadData(), persist().loadUi()]);
           const saved = savedRes.status === 'fulfilled' ? savedRes.value : null;
@@ -203,6 +241,10 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
           if (uiRes.status === 'rejected') console.error('life-achievements: could not read the remembered area', uiRes.reason);
           let parsed = saved ? parseBackup(saved, now()) : null;
           if (parsed && !parsed.ok) console.error('life-achievements: saved data is invalid:', parsed.error);
+          if (early) {
+            const newer = parseBackup(early, now());
+            if (newer.ok) parsed = newer;
+          }
           // a missing, unreadable or broken document with snapshots left behind is a loss, not a
           // first launch; on a real first launch there are no snapshots
           if (!parsed?.ok) parsed = await recoverFromSnapshot();
@@ -220,6 +262,8 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
 
       start(kind) {
         const prev = get();
+        // the day's snapshot only has the day's starting state: keep what this replaces too
+        if (prev.phase === 'ready') persist().keepBeforeReplace?.(prev.data);
         const fresh = kind === 'starter' ? starterData(now()) : blankData(now());
         // a restart keeps the user's sound and label settings
         const data = prev.phase === 'ready' ? { ...fresh, settings: { ...prev.data.settings } } : fresh;
@@ -240,13 +284,9 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
 
       undo(id) {
         const data = get().data;
-        const n = byId(data).get(id);
-        if (!n) return err(MSG.noNode);
-        if (!isDone(data, id)) return err(MSG.notDone);
-        const blockers = undoBlockers(data, id);
-        if (blockers.length) return err(MSG.undoBlocked(quoteAll(blockers.map(b => b.title))));
-        const em = totals(data).emeralds;
-        if (n.pts > 0 && em < n.pts) return err(MSG.undoSpent(n.pts - em));
+        const problem = undoProblem(data, id);
+        if (problem) return err(problem);
+        const n = byId(data).get(id)!;
         const done = { ...data.done };
         const prev = done[id].prevProgress;
         delete done[id];
@@ -377,7 +417,8 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
           const areaNodes = nodesOfArea(data, area.id).map(m => (m.id === node.id ? node : m));
           if (!canPlace(areaNodes, node.id, node.x, node.y)) {
             const place = placeNode(areaNodes, parents, node.id);
-            if (!place) return err(parents.length > 1 ? MSG.noRoom : MSG.noRoomOne);
+            // named as the editor's prerequisite list shows it
+            if (!place) return err(parents.length > 1 ? MSG.noRoom : MSG.noRoomEditOne(displayTitle(data, map.get(parents[0])!)));
             node.x = place.x;
             node.y = place.y;
             others = makeRoom(others, place, node.id);
@@ -538,8 +579,10 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
         const parsed = parseBackup(file, now());
         if (!parsed.ok) return parsed;
         const data = parsed.data;
-        const cur = get().areaId;
-        const areaId = data.areas.some(a => a.id === cur) ? cur : data.areas[0].id;
+        const s = get();
+        // the day's snapshot only has the day's starting state: keep what this replaces too
+        if (s.phase === 'ready') persist().keepBeforeReplace?.(s.data);
+        const areaId = data.areas.some(a => a.id === s.areaId) ? s.areaId : data.areas[0].id;
         commit(data, { phase: 'ready', areaId });
         return { ok: true };
       },
@@ -547,5 +590,13 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
   });
 }
 
+const externalListeners = new Set<(lost: boolean) => void>();
+
+/** Listen for the app's data being replaced by a newer document saved in another tab. */
+export function onExternalData(listener: (lost: boolean) => void): () => void {
+  externalListeners.add(listener);
+  return () => externalListeners.delete(listener);
+}
+
 /** The app's store. */
-export const useStore = createAppStore();
+export const useStore = createAppStore({ onExternal: lost => externalListeners.forEach(l => l(lost)) });

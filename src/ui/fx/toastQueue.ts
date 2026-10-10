@@ -110,6 +110,16 @@ function pump(): void {
   }
 }
 
+/**
+ * Move the toasts on screen to the visible tree area as it is now. The detail panel calls this when
+ * the phone sheet or sideways dock opens or closes, so a toast shown before stays clear of it.
+ */
+export function repositionToasts(): void {
+  if (!snap.items.length) return;
+  const pos = position();
+  if (pos) emit({ ...snap, pos });
+}
+
 /** Queue a toast. */
 export function toast(t: ToastInput): void {
   queue.push(t);

@@ -6,8 +6,8 @@ import { blankData } from '../domain/templates';
 import { parseBackup } from '../domain/validate';
 import type { CompleteResult, LifeData } from '../domain/types';
 import type { AchievementInput } from './inputs';
-import { createPersistence, type UiPrefs } from './persist';
-import { createAppStore, MSG } from './store';
+import { createPersistence, type ExternalChange, type UiPrefs } from './persist';
+import { createAppStore, MSG, undoProblem } from './store';
 
 const NOW = new Date(2026, 9, 10, 12);
 const TODAY = '2026-10-10';
@@ -19,6 +19,10 @@ function fakePersist(stored: LifeData | null = null, ui: UiPrefs | null = null) 
     saves: [] as LifeData[],
     uiSaves: [] as UiPrefs[],
     backups: [] as string[],
+    kept: [] as LifeData[],
+    listeners: new Set<(e: ExternalChange) => void>(),
+    /** Another tab saved `data`. */
+    external: (data: unknown, lost = false) => p.listeners.forEach(l => l({ data: data as LifeData, lost })),
     loadData: async () => p.stored,
     loadUi: async () => p.ui,
     saveData: (d: LifeData) => {
@@ -32,14 +36,21 @@ function fakePersist(stored: LifeData | null = null, ui: UiPrefs | null = null) 
     setLastBackup: (d: string) => {
       p.backups.push(d);
     },
+    keepBeforeReplace: (d: LifeData) => {
+      p.kept.push(d);
+    },
+    onExternalChange: (l: (e: ExternalChange) => void) => {
+      p.listeners.add(l);
+      return () => p.listeners.delete(l);
+    },
   };
   return p;
 }
 
-function setup(kind: 'starter' | 'blank' | null = 'starter') {
+function setup(kind: 'starter' | 'blank' | null = 'starter', onExternal?: (lost: boolean) => void) {
   let t = NOW;
   const persist = fakePersist();
-  const store = createAppStore({ persist, now: () => t });
+  const store = createAppStore({ persist, now: () => t, onExternal });
   if (kind) store.getState().start(kind);
   return {
     store,
@@ -369,6 +380,18 @@ describe('undo', () => {
     expect(env.s().undo('nope')).toEqual({ ok: false, error: MSG.noNode });
     expect(env.s().undo('o_start')).toEqual({ ok: false, error: MSG.notDone });
   });
+
+  it('can be asked beforehand why it would be refused', () => {
+    const env = setup();
+    expect(undoProblem(env.data(), 'o_start')).toBe(MSG.notDone);
+    reach(env, 'o_sleep');
+    const before = env.data();
+    expect(undoProblem(env.data(), 'o_start')).toBe(MSG.undoBlocked('「甜蜜的梦」'));
+    expect(undoProblem(env.data(), 'o_sleep')).toBeNull();
+    // asking changes nothing
+    expect(env.data()).toBe(before);
+    expect(env.s().undo('o_sleep')).toEqual({ ok: true });
+  });
 });
 
 describe('bump', () => {
@@ -586,7 +609,11 @@ describe('saveAchievement: edit', () => {
     const env = setup();
     expect(env.s().saveAchievement(input({ parents: ['o_home'] }), 'o_offline')).toEqual({ ok: false, error: MSG.cycle });
     // o_sleep would have to sit right of o_water and left of its children in column 2
-    expect(env.s().saveAchievement(input({ parents: ['o_water'] }), 'o_sleep')).toEqual({ ok: false, error: MSG.noRoomOne });
+    // the message is about the edited achievement, not a new one, and names the full prerequisite
+    expect(env.s().saveAchievement(input({ parents: ['o_water'] }), 'o_sleep')).toEqual({
+      ok: false,
+      error: '「无限水源」后面挤满了，放不下这个进度。换个前置，或关掉窗口先点「整理」腾出位置。',
+    });
     expect(env.s().saveAchievement(input({ parents: ['o_cook'] }), 'o_cook')).toEqual({ ok: false, error: MSG.parentSelf });
     expect(env.s().saveAchievement(input({ areaId: 'body', parents: ['b_warm_up'] }), 'o_cook')).toEqual({ ok: false, error: MSG.moveArea });
     expect(env.s().saveAchievement(input(), 'nope')).toEqual({ ok: false, error: MSG.noNode });
@@ -927,6 +954,86 @@ describe('backups', () => {
     one.achievements = one.achievements.slice(0, 1);
     expect(env.s().importBackup(one)).toEqual({ ok: true });
     expect(env.s().areaId).toBe('origin');
+  });
+});
+
+describe('replacing the data', () => {
+  it('keeps a copy of the current data before an import or a restart', () => {
+    const env = setup();
+    env.s().complete('o_start');
+    const worked = env.data();
+    expect(env.s().importBackup({ hello: 'world' }).ok).toBe(false);
+    expect(env.persist.kept).toEqual([]);
+    expect(env.s().importBackup(blankData(NOW))).toEqual({ ok: true });
+    expect(env.persist.kept).toEqual([worked]);
+    const imported = env.data();
+    env.s().start('starter');
+    expect(env.persist.kept).toEqual([worked, imported]);
+  });
+
+  it('keeps nothing on the first start or an import during onboarding', async () => {
+    const env = setup(null);
+    await env.s().init();
+    expect(env.s().phase).toBe('new');
+    env.s().start('blank');
+    expect(env.s().importBackup(blankData(NOW))).toEqual({ ok: true });
+    expect(env.persist.kept).toHaveLength(1);
+    const env2 = setup(null);
+    await env2.s().init();
+    expect(env2.s().importBackup(blankData(NOW))).toEqual({ ok: true });
+    expect(env2.persist.kept).toEqual([]);
+  });
+});
+
+describe('another tab', () => {
+  it('takes over the newer data another tab saved, without saving it again', async () => {
+    const heard: boolean[] = [];
+    const env = setup(null, lost => heard.push(lost));
+    env.persist.stored = blankData(NOW);
+    await env.s().init();
+    env.s().setArea('road');
+    const saves = env.persist.saves.length;
+    const other = createAppStore({ persist: fakePersist(), now: () => NOW });
+    other.getState().start('starter');
+    other.getState().complete('o_start', { note: '那边写的' });
+    env.persist.external(JSON.parse(JSON.stringify(other.getState().data)));
+    expect(env.data()).toEqual(other.getState().data);
+    expect(env.s().areaId).toBe('road');
+    expect(env.persist.saves).toHaveLength(saves);
+    expect(heard).toEqual([false]);
+    env.persist.external(other.getState().data, true);
+    expect(heard).toEqual([false, true]);
+  });
+
+  it('leaves onboarding when another tab started', async () => {
+    const env = setup(null);
+    await env.s().init();
+    expect(env.s().phase).toBe('new');
+    env.persist.external(blankData(NOW));
+    expect(env.s().phase).toBe('ready');
+    expect(env.data().achievements).toHaveLength(7);
+  });
+
+  it('uses a document saved by another tab while it was still loading', async () => {
+    const env = setup(null);
+    env.persist.stored = blankData(NOW);
+    const p = env.s().init();
+    const newer = { ...blankData(NOW), done: { o_start: { date: TODAY } } };
+    env.persist.external(newer);
+    await p;
+    expect(env.s().phase).toBe('ready');
+    expect(env.data().done).toEqual({ o_start: { date: TODAY } });
+  });
+
+  it('ignores data it cannot read', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const env = setup(null);
+    env.persist.stored = blankData(NOW);
+    await env.s().init();
+    const before = env.data();
+    env.persist.external({ version: 2, areas: [], achievements: [] });
+    expect(env.data()).toBe(before);
+    expect(error).toHaveBeenCalled();
   });
 });
 

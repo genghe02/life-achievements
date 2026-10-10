@@ -11,6 +11,7 @@ export function AreaTabs() {
   const areaId = useStore(s => s.areaId);
   const cur = data.areas.some(a => a.id === areaId) ? areaId : data.areas[0]?.id;
   const refs = useRef(new Map<string, HTMLButtonElement>());
+  const navRef = useRef<HTMLElement>(null);
 
   const tabs = useMemo(() => data.areas.map(a => {
     const ns = nodesOfArea(data, a.id);
@@ -20,6 +21,25 @@ export function AreaTabs() {
   useEffect(() => {
     if (cur) refs.current.get(cur)?.scrollIntoView?.({ inline: 'nearest', block: 'nearest' });
   }, [cur]);
+
+  // The row has no visible scrollbar: a plain mouse wheel over it scrolls it sideways when it
+  // overflows (trackpads and shift+wheel already scroll it). Not passive, to keep the page still.
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.shiftKey || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+      const max = nav.scrollWidth - nav.clientWidth;
+      if (max <= 0) return;
+      const step = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? 40 : e.deltaMode === WheelEvent.DOM_DELTA_PAGE ? nav.clientWidth : 1;
+      const next = Math.max(0, Math.min(max, nav.scrollLeft + e.deltaY * step));
+      if (next === nav.scrollLeft) return;
+      e.preventDefault();
+      nav.scrollLeft = next;
+    };
+    nav.addEventListener('wheel', onWheel, { passive: false });
+    return () => nav.removeEventListener('wheel', onWheel);
+  }, []);
 
   const go = (id: string, focus = false) => {
     SFX.click();
@@ -49,7 +69,7 @@ export function AreaTabs() {
   };
 
   return (
-    <nav className="tabs" aria-label="人生领域">
+    <nav ref={navRef} className="tabs" aria-label="人生领域">
       <div className="tablist" role="tablist" aria-label="人生领域" onKeyDown={onKey}>
         {tabs.map(({ area, done, all, locked }) => {
           const selected = area.id === cur;

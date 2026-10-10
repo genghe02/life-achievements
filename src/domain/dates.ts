@@ -22,9 +22,17 @@ export function isFuture(date: string, now: Date = new Date()): boolean {
   return date > today(now);
 }
 
-/** A valid date that is not in the future; anything else becomes today. */
-export function safeDate(v: unknown, now: Date = new Date()): string {
-  return isDateStr(v) && !isFuture(v, now) ? v : today(now);
+/**
+ * The newest calendar date anywhere on Earth at `now` (UTC+14). A date saved as "today" in a time
+ * zone further east is still after today here.
+ */
+export function latestDay(now: Date = new Date()): string {
+  return new Date(now.getTime() + 14 * 3_600_000).toISOString().slice(0, 10);
+}
+
+/** A valid date that is not after `max` (default: today here); anything else becomes today. */
+export function safeDate(v: unknown, now: Date = new Date(), max: string = today(now)): string {
+  return isDateStr(v) && v <= max ? v : today(now);
 }
 
 /** True for a string that parses as a timestamp. */

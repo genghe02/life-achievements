@@ -112,7 +112,14 @@ export function TradeModal() {
   const em = useStore(s => totals(s.data).emeralds);
   const [editing, setEditing] = useState<string | null>(null);
   const [msg, setMsg] = useState('');
+  // what the last purchase got: toasts stay under an open modal, so the modal says it itself
+  const [ok, setOk] = useState('');
   const { armed, press, disarm } = useArm();
+  /** One line under the list: an error, a purchase confirmation, or nothing. */
+  const say = (error: string, done = '') => {
+    setMsg(error);
+    setOk(done);
+  };
   const listRef = useRef<HTMLUListElement>(null);
   const lastBuy = useRef({ id: '', at: Number.NEGATIVE_INFINITY });
 
@@ -130,10 +137,10 @@ export function TradeModal() {
     lastBuy.current = { id: r.id, at: now };
     const res = useStore.getState().buy(r.id);
     if (!res.ok) {
-      setMsg(res.error);
+      say(res.error);
       return;
     }
-    setMsg('');
+    say('', `换到了「${r.name}」，花了 ${r.cost} 颗绿宝石。`);
     SFX.trade();
     toast({ icon: icon(r.icon), kind: 'trade', l1: '交易成功！', l2: `${r.name} · -${r.cost} 绿宝石` });
     // the button turns into a disabled 「还差 N」 when this was the last affordable one
@@ -145,7 +152,7 @@ export function TradeModal() {
     const at = rewards.findIndex(x => x.id === r.id);
     useStore.getState().deleteReward(r.id);
     SFX.click();
-    setMsg('');
+    say('');
     // the pressed button is gone: focus the row that took its place (or the add form)
     requestAnimationFrame(() => {
       const btns = [...(listRef.current?.querySelectorAll<HTMLElement>('[data-edit]') ?? [])];
@@ -157,7 +164,7 @@ export function TradeModal() {
   const startEdit = (r: Reward) => {
     SFX.click();
     disarm();
-    setMsg('');
+    say('');
     setEditing(r.id);
   };
   const stopEdit = (id: string) => {
@@ -221,7 +228,9 @@ export function TradeModal() {
         <p className="empty-note small">还没有奖励。在下面添加一个，给自己一点盼头。</p>
       )}
       <p className="ferr small" role="alert">{msg}</p>
-      <RewardForm key="add" nameLabel="添加一个奖励" submitLabel="添加奖励" onDone={() => setMsg('')} />
+      {/* a live region has to exist before its text arrives, so it stays mounted (hidden while empty) */}
+      <p className={ok ? 'mok small' : 'sr-only'} role="status">{ok}</p>
+      <RewardForm key="add" nameLabel="添加一个奖励" submitLabel="添加奖励" onDone={() => say('')} />
       <div className="dsec">
         <h3>交易记录 · 已花 <span className="num">{spent}</span> 颗</h3>
         <ul className="tlog small">

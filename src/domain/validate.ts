@@ -1,10 +1,11 @@
 // Backup parsing: accepts a BackupFile (or a bare LifeData, or either as JSON text), checks types and
 // ranges, normalises (trim, clamp, fallback icons, drop dangling references, no future dates) and
-// rejects what is not this app's data or is structurally broken.
+// rejects what is not this app's data or is structurally broken. The app's own saved document goes
+// through it on every launch too.
 
 import { LIMITS } from '../store/inputs';
 import { FALLBACK_ICON, isAreaBg, isIconName, isNodeType } from './catalog';
-import { isIsoStamp, safeDate } from './dates';
+import { isIsoStamp, latestDay, safeDate } from './dates';
 import { isSafeId, newId } from './ids';
 import { conflicts, findSlot, GRID_MAX } from './layout';
 import { DEF_PTS, DEF_XP } from './level';
@@ -154,6 +155,9 @@ function parseLifeData(raw: Obj, now: Date): LifeData {
   }
   if (hasCycle(nodes)) fail(IMPORT_ERRORS.cycle);
   nodes = spreadStacked(nodes);
+  // "future" means future everywhere: a date picked as today in a time zone ahead of this one (a
+  // trip, another device) is kept as it is
+  const maxDate = latestDay(now);
 
   const done: Record<string, DoneInfo> = {};
   if (isObj(raw.done)) {
@@ -162,7 +166,7 @@ function parseLifeData(raw: Obj, now: Date): LifeData {
       if (!n) continue;
       const info = typeof v === 'string' ? { date: v } : isObj(v) ? v : null;
       if (!info) continue;
-      const d: DoneInfo = { date: safeDate(info.date, now) };
+      const d: DoneInfo = { date: safeDate(info.date, now, maxDate) };
       const note = text(info.note, LIMITS.note);
       if (note) d.note = note;
       if (n.target) {
@@ -215,7 +219,7 @@ function parseLifeData(raw: Obj, now: Date): LifeData {
       name,
       cost: clampInt(t.cost, 0, LIMITS.costMax, 0),
       icon: isIconName(t.icon) ? t.icon : FALLBACK_ICON,
-      date: safeDate(t.date, now),
+      date: safeDate(t.date, now, maxDate),
     });
   }
 

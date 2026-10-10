@@ -271,6 +271,32 @@ describe('自动快照', () => {
     expect(getToasts().items.at(-1)).toMatchObject({ l1: '已恢复', l2: '回到 2026-10-01 的数据' });
   });
 
+  it('labels the copy kept before a replacement with its time and restores it', async () => {
+    vi.mocked(persist.listSnapshots).mockResolvedValue([
+      { date: '2026-10-01 14:32', done: 3, all: 97 },
+      { date: '2026-10-01', done: 0, all: 97 },
+    ]);
+    vi.mocked(persist.loadSnapshot).mockResolvedValue(blankData());
+    render(<MenuModal />);
+    await waitFor(() => expect(document.querySelectorAll('.snaps li')).toHaveLength(2));
+    const [copy, daily] = document.querySelectorAll('.snaps li');
+    expect(copy.querySelector('.stag')?.textContent).toBe('替换前 · 14:32');
+    expect(copy.textContent).toContain('2026-10-01');
+    expect(copy.querySelector('button')?.textContent).toBe('恢复这份');
+    expect(daily.querySelector('.stag')).toBeNull();
+    expect(daily.querySelector('button')?.textContent).toBe('恢复到这一天');
+    expect(document.querySelector('.msnaps .mnote')?.textContent).toContain('导入、恢复或重新开始前，也会留一份当时的数据（保留最近 3 份）。');
+
+    const restore = copy.querySelector('button')!;
+    fireEvent.click(restore);
+    expect(restore.textContent).toBe('再点一次恢复');
+    clock += 500;
+    await act(async () => { fireEvent.click(restore); });
+    expect(persist.loadSnapshot).toHaveBeenCalledWith('2026-10-01 14:32');
+    expect(s().data.achievements).toHaveLength(7);
+    expect(getToasts().items.at(-1)).toMatchObject({ l1: '已恢复', l2: '回到 2026-10-01 14:32 替换前的数据' });
+  });
+
   it('says so when a snapshot cannot be read', async () => {
     vi.mocked(persist.listSnapshots).mockResolvedValue([{ date: '2026-10-01', done: 0, all: 7 }]);
     render(<MenuModal />);
@@ -336,6 +362,23 @@ describe('添加到主屏幕', () => {
     await act(async () => { fireEvent.click(within(sec).getByRole('button', { name: '安装' })); });
     expect(ev.prompt).toHaveBeenCalled();
     expect(section('添加到主屏幕').textContent).toContain('已经装好了，以后可以像应用一样直接打开。');
+  });
+
+  it('on a computer, keeps the section after a dismissed install to say so', async () => {
+    const ev = new Event('beforeinstallprompt') as Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
+    ev.prompt = vi.fn(async () => {});
+    ev.userChoice = Promise.resolve({ outcome: 'dismissed' });
+    setInstallEventForTests(ev);
+    render(<MenuModal />);
+    const go = within(section('添加到主屏幕')).getByRole('button', { name: '安装' });
+    go.focus();
+    await act(async () => { fireEvent.click(go); });
+    expect(ev.prompt).toHaveBeenCalled();
+    const sec = section('添加到主屏幕');
+    expect(within(sec).getByRole('status').textContent).toBe('没有安装。以后想装，可以再回到这里。');
+    // the prompt is used up: no second 安装
+    expect(within(sec).queryByRole('button', { name: '安装' })).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(within(sec).getByRole('status')));
   });
 
   it('shows the Safari steps on an iPhone', () => {

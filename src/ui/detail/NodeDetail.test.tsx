@@ -264,6 +264,81 @@ describe('NodeDetail', () => {
     expect(useUi.getState().sel).toBe('o_sleep');
   });
 
+  it('guards each achievement on its own: a quick click on another one still counts', () => {
+    let view = show('o_start');
+    fireEvent.click(button('完成进度'), { detail: 1 });
+    view.unmount();
+    clock += 1000;
+    view = show('o_water');
+    fireEvent.click(button('完成进度'), { detail: 1 });
+    view.unmount();
+    // within the guard of o_water's completion: undoing o_start is refused with the reason
+    clock += 300;
+    view = show('o_start');
+    fireEvent.click(button('撤销完成'), { detail: 1 });
+    expect(document.querySelector('.dmsg')?.textContent).toBe(MSG.undoBlocked('「无限水源」'));
+    view.unmount();
+    // and right after undoing o_water, another achievement can be completed
+    clock += 1000;
+    view = show('o_water');
+    fireEvent.click(button('撤销完成'), { detail: 1 });
+    expect(s().data.done.o_water).toBeUndefined();
+    view.unmount();
+    clock += 300;
+    show('o_tidy');
+    fireEvent.click(button('完成进度'), { detail: 1 });
+    expect(s().data.done.o_tidy).toBeDefined();
+  });
+
+  it('counts a note still being typed: undo saves it and asks twice', () => {
+    done('o_start');
+    show('o_start');
+    // typed, no blur (iOS keeps the field focused when a button is tapped)
+    fireEvent.change(screen.getByLabelText(/感想/), { target: { value: '刚写的感想' } });
+    fireEvent.click(button('撤销完成'), { detail: 1 });
+    expect(button('再点一次撤销（感想会删掉）')).toBeTruthy();
+    expect(s().data.done.o_start).toEqual({ date: today(), note: '刚写的感想' });
+    clock += 500;
+    fireEvent.click(button(/^再点一次撤销/), { detail: 1 });
+    expect(s().data.done.o_start).toBeUndefined();
+  });
+
+  it('says at once why undo is refused, even when the note would make it ask twice', () => {
+    act(() => { s().complete('o_start', { note: '种下了' }); });
+    done('o_sleep');
+    show('o_start');
+    fireEvent.click(button('撤销完成'), { detail: 1 });
+    expect(document.querySelector('.dmsg')?.textContent).toBe(MSG.undoBlocked('「甜蜜的梦」'));
+    expect(button('撤销完成').className).toBe('btn');
+    expect(s().data.done.o_start.note).toBe('种下了');
+  });
+
+  it('lets an import replace the note shown in the panel', () => {
+    act(() => { s().complete('o_start', { note: '设备A的感想' }); });
+    const file = s().exportBackup();
+    file.data = { ...file.data, done: { ...file.data.done, o_start: { ...file.data.done.o_start, note: '设备B的感想' } } };
+    const view = show('o_start');
+    // the menu imports and clears the selection in one go, so the panel never shows the new note
+    act(() => {
+      expect(s().importBackup(file)).toEqual({ ok: true });
+      view.unmount();
+    });
+    expect(s().data.done.o_start.note).toBe('设备B的感想');
+  });
+
+  it('drops a draft whose note was replaced by an import', () => {
+    act(() => { s().complete('o_start', { note: '设备A的感想' }); });
+    const file = s().exportBackup();
+    file.data = { ...file.data, done: { ...file.data.done, o_start: { ...file.data.done.o_start, note: '设备B的感想' } } };
+    const view = show('o_start');
+    fireEvent.change(screen.getByLabelText(/感想/), { target: { value: '没写完' } });
+    act(() => {
+      s().importBackup(file);
+      view.unmount();
+    });
+    expect(s().data.done.o_start.note).toBe('设备B的感想');
+  });
+
   it('opens the editor for this achievement or a new one after it', () => {
     show('o_start');
     fireEvent.click(button('编辑'));

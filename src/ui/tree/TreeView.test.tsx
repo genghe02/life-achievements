@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { areaGates, nodesOfArea } from '../../domain/rules';
 import { useStore } from '../../store/store';
+import { takeTitleFocus } from '../detail/nav';
 import { clearToasts, getToasts, toast } from '../fx/toastQueue';
 import { useUi } from '../uiStore';
 import { TreeView } from './TreeView';
@@ -80,17 +81,24 @@ describe('TreeView', () => {
     expect(useUi.getState().sel).toBe(gate.id);
     expect(useUi.getState().centerReq?.id).toBe(gate.id);
     expect(document.querySelector('.vbanner')).toBeNull();
+    // the detail panel then focuses the gate's heading, as after a jump from one of its own rows
+    expect(takeTitleFocus(gate.id)).toBe(true);
   });
 
   it('shows the arrange hint and turns arrange mode off with 「完成」', () => {
-    render(<TreeView />);
+    // the window head's 「整理」 button, which started arrange mode
+    render(<><button className="btn sm btn-arrange" type="button">整理</button><TreeView /></>);
     expect(document.querySelector('.arr-hint')).toBeNull();
     act(() => useUi.getState().setArrange(true));
     expect(document.querySelector('.vp')?.classList.contains('arrange')).toBe(true);
     expect(document.querySelector('.arr-hint span')?.textContent).toBe('拖动进度换个位置。');
-    act(() => { fireEvent.click(screen.getByRole('button', { name: '完成' })); });
+    const done = screen.getByRole('button', { name: '完成' });
+    done.focus();
+    act(() => { fireEvent.click(done); });
     expect(useUi.getState().arrange).toBe(false);
     expect(document.querySelector('.vp')?.classList.contains('arrange')).toBe(false);
+    // focus does not fall back to the page
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '整理' }));
   });
 
   it('drops a node through pointer events: a refused cell explains why, and the message goes with the area', () => {

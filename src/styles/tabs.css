@@ -20,5 +20,10 @@
     linear-gradient(#000 0 0) 2px 2px / 2px 2px no-repeat,
     linear-gradient(#000 0 0) calc(100% - 2px) 2px / 2px 2px no-repeat; }
 .tab-add { justify-content: center; width: 46px; padding: 0 0 4px; --pf: #7d7d7d; --ph: #a4a4a4; --pl: #4a4a4a; }
+/* With many areas the row scrolls (no visible scrollbar): 「+」 stays pinned to its right end so a new
+   area is always one click away, and a tab scrolled into view stops clear of it. */
+.tabs { scroll-padding-inline: 8px 58px; }
+/* minus the row's end padding: flush with the row's edge, so no sliver of the tab under it shows */
+.tab-add { position: sticky; right: -8px; }
 .tab-add .tplus { font-size: 32px; line-height: 32px; color: var(--ink); }
 @media (hover: hover) { .tab-add:hover { --pf: #a0a0a0; } }

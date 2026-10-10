@@ -7,6 +7,8 @@ export function ArrangeHint({ msg }: { msg: string }) {
   const done = () => {
     SFX.click();
     useUi.getState().setArrange(false);
+    // this bar goes away with the mode: focus moves to the 「整理」 button that started it
+    document.querySelector<HTMLElement>('.btn-arrange')?.focus({ preventScroll: true });
   };
   return (
     <div className="arr-hint small">

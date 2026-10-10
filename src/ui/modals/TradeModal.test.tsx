@@ -80,6 +80,13 @@ describe('TradeModal', () => {
     expect(buyBtn('一杯奶茶').textContent).toBe('还差 3');
     expect(logHead()).toBe('交易记录 · 已花 3 颗');
     expect(document.querySelector('.tlog')?.textContent).toBe(`${today()} · 一杯奶茶 · -3`);
+    // toasts stay under an open modal: the modal says what was bought itself
+    const said = screen.getByRole('status');
+    expect(said.textContent).toBe('换到了「一杯奶茶」，花了 3 颗绿宝石。');
+    expect(said.className).toBe('mok small');
+    // and lets it go once something else happens
+    fireEvent.click(btn(row('一杯奶茶'), '编辑「一杯奶茶」'));
+    expect(screen.getByRole('status').textContent).toBe('');
   });
 
   it('lists every trade, newest first', () => {

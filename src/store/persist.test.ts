@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { starterData } from '../domain/templates';
 import type { LifeData } from '../domain/types';
-import { createPersistence, requestPersist, SNAPSHOT_KEEP } from './persist';
+import { createPersistence, type ExternalChange, REPLACED_KEEP, requestPersist, SNAPSHOT_KEEP } from './persist';
 
 let n = 0;
 const dbName = () => `test-persist-${Date.now()}-${n++}`;
@@ -213,6 +213,233 @@ describe('persistence (IndexedDB)', () => {
     q.saveData({ ...newer, updatedAt: '2026-10-10T10:00:00.000Z' });
     await q.flush();
     expect(localStorage.getItem(`${name}:unsaved`)).toBeNull();
+  });
+});
+
+describe('copies kept before the data is replaced', () => {
+  it('keeps the current document under the minute, newest first, next to the daily ones', async () => {
+    const c = clock(new Date(2026, 9, 1, 9, 5));
+    const p = createPersistence({ dbName: dbName(), autoFlush: false, now: c.now });
+    const base = starterData(c.now());
+    p.saveData(base);
+    await p.flush();
+    // today's work, then an import replaces it before the next save
+    const worked = withDone(withDone(base, 'o_start'), 'o_sleep');
+    p.saveData(worked);
+    c.set(new Date(2026, 9, 1, 14, 32, 10));
+    p.keepBeforeReplace(worked);
+    p.saveData(starterData(c.now()));
+    await p.flush();
+    expect(await p.listSnapshots()).toEqual([
+      { date: '2026-10-01 14:32', done: 2, all: 97 },
+      { date: '2026-10-01', done: 0, all: 97 },
+    ]);
+    expect(Object.keys((await p.loadSnapshot('2026-10-01 14:32'))!.done)).toEqual(['o_start', 'o_sleep']);
+    // a second replacement within the same minute keeps the first copy
+    c.set(new Date(2026, 9, 1, 14, 32, 50));
+    p.keepBeforeReplace(base);
+    await p.flush();
+    expect((await p.listSnapshots())[0]).toEqual({ date: '2026-10-01 14:32', done: 2, all: 97 });
+  });
+
+  it(`keeps the newest ${REPLACED_KEEP} copies on top of the ${SNAPSHOT_KEEP} daily snapshots`, async () => {
+    const c = clock(new Date(2026, 9, 1, 9));
+    const p = createPersistence({ dbName: dbName(), autoFlush: false, now: c.now });
+    const base = starterData(c.now());
+    for (let day = 1; day <= 20; day++) {
+      c.set(new Date(2026, 9, day, 9));
+      p.saveData(base);
+      await p.flush();
+      c.set(new Date(2026, 9, day, 10, day));
+      p.keepBeforeReplace(withDone(base, 'o_start'));
+      await p.flush();
+    }
+    const dates = (await p.listSnapshots()).map(s => s.date);
+    expect(dates.filter(d => d.length === 10)).toHaveLength(SNAPSHOT_KEEP);
+    expect(dates.filter(d => d.length > 10)).toEqual(['2026-10-20 10:20', '2026-10-19 10:19', '2026-10-18 10:18']);
+    expect(dates[0]).toBe('2026-10-20 10:20');
+    expect(dates[dates.length - 1]).toBe('2026-10-07');
+  });
+
+  it('lists a copy kept a moment ago without waiting for a flush', async () => {
+    const c = clock(new Date(2026, 9, 1, 9, 7));
+    const p = createPersistence({ dbName: dbName(), autoFlush: false, now: c.now });
+    p.keepBeforeReplace(withDone(starterData(c.now()), 'o_start'));
+    // the menu opened right after an import reads the list at once
+    expect(await p.listSnapshots()).toEqual([{ date: '2026-10-01 09:07', done: 1, all: 97 }]);
+  });
+
+  it('works on the localStorage fallback too', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const c = clock(new Date(2026, 9, 1, 9, 7));
+    const p = createPersistence({ dbName: dbName(), autoFlush: false, indexedDB: null, now: c.now });
+    p.keepBeforeReplace(withDone(starterData(c.now()), 'o_start'));
+    await p.flush();
+    expect(await p.listSnapshots()).toEqual([{ date: '2026-10-01 09:07', done: 1, all: 97 }]);
+    expect((await p.loadSnapshot('2026-10-01 09:07'))!.done).toHaveProperty('o_start');
+  });
+});
+
+describe('two tabs', () => {
+  const stamped = (d: LifeData, iso: string): LifeData => ({ ...d, updatedAt: iso });
+  /** Two tabs of the app on one database, each with what it heard from the other. */
+  async function twoTabs(opts: { sync?: boolean; indexedDB?: null } = {}) {
+    if (opts.indexedDB === null) vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = dbName();
+    const first = stamped(starterData(new Date(2026, 9, 10)), '2026-10-10T08:00:00.000Z');
+    const setupTab = createPersistence({ dbName: name, autoFlush: false, sync: false, ...opts });
+    setupTab.saveData(first);
+    await setupTab.flush();
+    const tab = () => {
+      const p = createPersistence({ dbName: name, autoFlush: false, sync: false, ...opts });
+      const heard: ExternalChange[] = [];
+      p.onExternalChange(e => heard.push(e));
+      return { p, heard };
+    };
+    const a = tab();
+    const b = tab();
+    expect(await a.p.loadData()).toEqual(first);
+    expect(await b.p.loadData()).toEqual(first);
+    return { name, first, a, b, read: () => createPersistence({ dbName: name, autoFlush: false, sync: false, ...opts }).loadData() };
+  }
+
+  for (const backend of ['IndexedDB', 'localStorage'] as const) {
+    it(`a save made on an older document does not overwrite the newer one (${backend})`, async () => {
+      const { first, a, b, read } = await twoTabs(backend === 'localStorage' ? { indexedDB: null } : {});
+      const fromA = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+      a.p.saveData(fromA);
+      await a.p.flush();
+      // b still shows the first document and renames an area
+      const fromB = stamped({ ...first, areas: first.areas.map((x, i) => (i === 1 ? { ...x, name: '改名' } : x)) }, '2026-10-10T09:01:00.000Z');
+      b.p.saveData(fromB);
+      await b.p.flush();
+      expect(await read()).toEqual(fromA);
+      expect(b.heard).toEqual([{ data: fromA, lost: true }]);
+      // what b does next starts from a's document and is saved
+      const next = stamped(withDone(fromA, 'o_sleep'), '2026-10-10T09:02:00.000Z');
+      b.p.saveData(next);
+      await b.p.flush();
+      expect(await read()).toEqual(next);
+      expect(a.heard).toEqual([]);
+    });
+  }
+
+  it('drops the saves that were already queued behind the refused one', async () => {
+    const { first, a, b, read } = await twoTabs();
+    const fromA = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+    a.p.saveData(fromA);
+    await a.p.flush();
+    b.p.saveData(stamped(withDone(first, 'o_water'), '2026-10-10T09:01:00.000Z'));
+    const f1 = b.p.flush();
+    b.p.saveData(stamped(withDone(withDone(first, 'o_water'), 'o_sleep'), '2026-10-10T09:02:00.000Z'));
+    await Promise.all([f1, b.p.flush()]);
+    expect(await read()).toEqual(fromA);
+    expect(b.heard.map(e => e.lost)).toEqual([true]);
+  });
+
+  it('hears about the other tab\'s saves and keeps saving on top of them', async () => {
+    const { first, a, b, read } = await twoTabs({ sync: true });
+    const fromA = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+    a.p.saveData(fromA);
+    await a.p.flush();
+    expect(await eventually(async () => b.heard[0] ?? null)).toEqual({ data: fromA, lost: false });
+    const fromB = stamped(withDone(fromA, 'o_water'), '2026-10-10T09:01:00.000Z');
+    b.p.saveData(fromB);
+    await b.p.flush();
+    expect(await read()).toEqual(fromB);
+    expect(await eventually(async () => a.heard[0] ?? null)).toEqual({ data: fromB, lost: false });
+    expect(b.heard).toHaveLength(1);
+  });
+
+  it('checks for a newer document when the page is shown again', async () => {
+    const name = dbName();
+    const first = stamped(starterData(new Date(2026, 9, 10)), '2026-10-10T08:00:00.000Z');
+    const other = createPersistence({ dbName: name, autoFlush: false, sync: false });
+    other.saveData(first);
+    await other.flush();
+    const p = createPersistence({ dbName: name, autoFlush: false });
+    const heard: ExternalChange[] = [];
+    p.onExternalChange(e => heard.push(e));
+    await p.loadData();
+    const newer = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+    other.saveData(newer);
+    await other.flush();
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(await eventually(async () => heard[0] ?? null)).toEqual({ data: newer, lost: false });
+  });
+
+  describe('a tab closed with a save still on its way', () => {
+    /** What a closing tab leaves behind (copyUnsaved), as the other tabs hear about it. */
+    const leaveCopy = (name: string, doc: LifeData) => {
+      const raw = JSON.stringify(doc);
+      localStorage.setItem(`${name}:unsaved`, raw);
+      window.dispatchEvent(new StorageEvent('storage', { key: `${name}:unsaved`, newValue: raw }));
+    };
+
+    it('is finished by another tab', async () => {
+      const { name, first, b, read } = await twoTabs({ sync: true });
+      const closing = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+      leaveCopy(name, closing);
+      expect(await eventually(async () => b.heard[0] ?? null)).toEqual({ data: closing, lost: false });
+      await b.p.flush();
+      expect(await read()).toEqual(closing);
+      expect(localStorage.getItem(`${name}:unsaved`)).toBeNull();
+      // and b goes on from there
+      const next = stamped(withDone(closing, 'o_water'), '2026-10-10T09:01:00.000Z');
+      b.p.saveData(next);
+      await b.p.flush();
+      expect(await read()).toEqual(next);
+      expect(b.heard).toHaveLength(1);
+    });
+
+    it('is picked up as stored when its own write landed after all', async () => {
+      const { name, first, a, b, read } = await twoTabs({ sync: true });
+      const closing = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+      a.p.saveData(closing);
+      leaveCopy(name, closing);
+      await a.p.flush();
+      await b.p.flush();
+      expect(await read()).toEqual(closing);
+      expect(b.heard.map(e => e.lost)).toEqual([false]);
+      expect(a.heard).toEqual([]);
+    });
+
+    it('wins over a change still waiting here, which is reported', async () => {
+      const { name, first, b, read } = await twoTabs({ sync: true });
+      b.p.saveData(stamped(withDone(first, 'o_water'), '2026-10-10T08:59:00.000Z'));
+      const closing = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+      leaveCopy(name, closing);
+      await b.p.flush();
+      expect(await read()).toEqual(closing);
+      expect(b.heard).toEqual([{ data: closing, lost: true }]);
+    });
+
+    it('is ignored when it is older than what this tab has', async () => {
+      const { name, first, b, read } = await twoTabs({ sync: true });
+      const newer = stamped(withDone(first, 'o_water'), '2026-10-10T09:05:00.000Z');
+      b.p.saveData(newer);
+      await b.p.flush();
+      leaveCopy(name, stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z'));
+      await sleep(50);
+      await b.p.flush();
+      expect(await read()).toEqual(newer);
+      expect(b.heard).toEqual([]);
+    });
+  });
+
+  it('leaves a tab with an unsaved change to find out when it saves', async () => {
+    const { first, a, b, read } = await twoTabs({ sync: true });
+    const fromB = stamped(withDone(first, 'o_water'), '2026-10-10T09:01:00.000Z');
+    b.p.saveData(fromB); // still in the debounce
+    const fromA = stamped(withDone(first, 'o_start'), '2026-10-10T09:00:00.000Z');
+    a.p.saveData(fromA);
+    await a.p.flush();
+    await sleep(50);
+    expect(b.heard).toEqual([]);
+    await b.p.flush();
+    expect(b.heard).toEqual([{ data: fromA, lost: true }]);
+    expect(await read()).toEqual(fromA);
   });
 });
 

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearToasts, getToasts, setToastArea, toast, TOAST_LIFE } from './toastQueue';
+import { clearToasts, getToasts, repositionToasts, setToastArea, toast, TOAST_LIFE } from './toastQueue';
 
 const t = (l2: string) => ({ icon: 'x.png', kind: 'task' as const, l1: '进度已达成！', l2 });
 
@@ -42,6 +42,19 @@ describe('toast queue', () => {
     } finally {
       vp.remove();
     }
+  });
+
+  it('moves toasts already on screen when the visible tree area changes', () => {
+    let right = 1000;
+    setToastArea(() => ({ top: 100, right, width: 800 }));
+    repositionToasts(); // nothing showing: no change
+    expect(getToasts().pos).toBeNull();
+    toast(t('a'));
+    expect(getToasts().pos).toEqual({ top: 110, right: window.innerWidth - 1000 + 10, width: 320 });
+    right = 700; // a sideways dock opened on the right
+    repositionToasts();
+    expect(getToasts().pos).toEqual({ top: 110, right: window.innerWidth - 700 + 10, width: 320 });
+    expect(getToasts().items.map(i => i.l2)).toEqual(['a']);
   });
 
   it('keeps toasts at least 200px wide in a narrow area', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isDateStr, isFuture, isIsoStamp, safeDate, today } from './dates';
+import { isDateStr, isFuture, isIsoStamp, latestDay, safeDate, today } from './dates';
 import { isSafeId, newId } from './ids';
 
 describe('dates', () => {
@@ -25,6 +25,16 @@ describe('dates', () => {
     expect(safeDate('2025-12-31', now)).toBe('2025-12-31');
     expect(safeDate('2026-01-06', now)).toBe('2026-01-05');
     expect(safeDate('nope', now)).toBe('2026-01-05');
+    expect(safeDate('2026-01-06', now, '2026-01-06')).toBe('2026-01-06');
+    expect(safeDate('2026-01-07', now, '2026-01-06')).toBe('2026-01-05');
+  });
+
+  it('knows the newest date anywhere on Earth', () => {
+    // 17:07 UTC: already the next day from UTC+10 eastwards
+    expect(latestDay(new Date(Date.UTC(2026, 9, 10, 17, 7)))).toBe('2026-10-11');
+    expect(latestDay(new Date(Date.UTC(2026, 9, 10, 9, 59)))).toBe('2026-10-10');
+    expect(latestDay(new Date(Date.UTC(2026, 9, 10, 10, 0)))).toBe('2026-10-11');
+    expect(latestDay(new Date(Date.UTC(2026, 11, 31, 12, 0)))).toBe('2027-01-01');
   });
 
   it('checks timestamps', () => {

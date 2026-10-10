@@ -6,7 +6,7 @@
   .tab { padding: 0 4px 4px; gap: 0; }
   .tab .tn, .tab .tc { display: none; }
   .tab .tlk { left: 22px; }
-  .tab-add { width: 40px; padding: 0 0 4px; }
+  .tab-add { width: 40px; padding: 0 0 4px; right: -4px; }
   .win { padding: 10px 10px 12px; }
   .whead { gap: 6px; }
   .whead .sub { display: none; }
@@ -31,15 +31,6 @@
   .trade .arr { display: none; }
   .toast { padding: 8px 12px 8px 8px; gap: 10px; }
   .arr-hint { top: 10px; max-width: calc(100% - 20px); }
-  /* the sheet owns the bottom edge on phones: the update bar comes in from the top instead */
-  .updbar { top: calc(8px + var(--safe-t)); bottom: auto; animation-name: updin-top; }
-}
-@keyframes updin-top { from { transform: translate(-50%, calc(-100% - 24px)); } }
-@media (max-width: 559px) {
-  .onb-box { padding: 18px 16px 16px; }
-  .onb-head h1 { font-size: 16px; line-height: 20px; }
-  .onb-choices { grid-template-columns: minmax(0, 1fr); }
-  .onb-choice { min-height: 0; }
 }
 /* 38px tabs and a 36px 「+」 with 2px gaps: seven areas and the 「+」 fit from 356px up (40px tabs
    need 388px) */
@@ -68,7 +59,9 @@
   .win { padding: 6px 8px 8px; gap: 6px; }
   .whead { position: absolute; z-index: 3; right: 6px; bottom: calc(100% + 4px); min-height: 0; padding: 0; }
   .whead h1, .whead .wprog { display: none; }
-  .detail { top: calc(48px + var(--safe-t)); bottom: calc(8px + var(--safe-b)); left: auto; right: max(8px, var(--safe-r)); width: min(360px, 46vw); max-height: none;
+  /* the dock starts level with the window's top edge, below the window head that sits in the tab
+     row, so 「+ 新建」 and 领域设置 stay reachable while it is open (HUD 40 + tab row 44 + gaps) */
+  .detail { top: calc(88px + var(--safe-t)); bottom: calc(8px + var(--safe-b)); left: auto; right: max(8px, var(--safe-r)); width: min(360px, 46vw); max-height: none;
     transform: translateX(calc(100% + 40px)); }
 }
 @media (pointer: coarse) {

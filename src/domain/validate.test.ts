@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { latestDay, today } from './dates';
 import { conflicts, GRID_MAX } from './layout';
 import { nodesOfArea } from './rules';
 import { starterData } from './templates';
@@ -214,6 +215,20 @@ describe('parseBackup: normalises', () => {
     expect(out.done.o_start.date).toBe('2026-10-10');
     expect(out.done.o_offline.date).toBe('2026-10-10');
     expect(out.trades[0].date).toBe('2026-10-10');
+  });
+
+  it('keeps a date that is already today in a time zone further east', () => {
+    // 17:07 UTC: Shanghai is a day ahead of Los Angeles
+    const now = new Date(Date.UTC(2026, 9, 10, 17, 7));
+    const ahead = latestDay(now);
+    const next = new Date(Date.parse(`${ahead}T12:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+    const d = sample();
+    const res = parseBackup({ ...d, done: { o_start: { date: ahead }, o_offline: { date: next } }, trades: [{ ...d.trades[0], date: ahead }] }, now);
+    if (!res.ok) throw new Error(res.error);
+    expect(res.data.done.o_start.date).toBe(ahead);
+    expect(res.data.trades[0].date).toBe(ahead);
+    // a day later than anywhere on Earth is still a mistake
+    expect(res.data.done.o_offline.date).toBe(today(now));
   });
 
   it('reads plain date strings as done entries and drops empty notes', () => {

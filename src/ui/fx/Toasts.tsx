@@ -1,9 +1,11 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { watchOtherTabs } from './otherTabs';
 import { getToasts, subscribeToasts } from './toastQueue';
 
 /** Renders the toast queue (see toastQueue.ts). Mounted once by App. */
 export function Toasts() {
   const { items, pos } = useSyncExternalStore(subscribeToasts, getToasts, getToasts);
+  useEffect(() => watchOtherTabs(), []);
   return (
     <div className="toasts" role="status" aria-live="polite" style={pos ?? undefined}>
       {items.map(t => (

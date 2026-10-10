@@ -4,8 +4,7 @@ import { LOCK } from '../../art/pixel';
 import { SFX } from '../../art/sfx';
 import { areaGates, displayTitle, isDone } from '../../domain/rules';
 import type { LifeData } from '../../domain/types';
-import { useStore } from '../../store/store';
-import { useUi } from '../uiStore';
+import { goTo } from '../detail/nav';
 
 export function LockedBanner({ data, areaId }: { data: LifeData; areaId: string }) {
   const gate = areaGates(data, areaId).find(g => !isDone(data, g.id));
@@ -13,8 +12,8 @@ export function LockedBanner({ data, areaId }: { data: LifeData; areaId: string 
   const area = data.areas.find(a => a.id === gate.areaId);
   const go = () => {
     SFX.click();
-    useStore.getState().setArea(gate.areaId);
-    useUi.getState().focusNode(gate.id);
+    // like the rows of the detail panel: switch area, select, and focus the panel's heading
+    goTo(gate.id);
   };
   return (
     <div className="vbanner small">

@@ -1,6 +1,7 @@
 // The ≡ menu: 统计, 设置, 数据 (backup export / import, daily snapshots), 添加到主屏幕 and 重新开始.
 
 import { useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import { icon, XPORB } from '../../art/pixel';
 import { setSound, SFX } from '../../art/sfx';
 import { today } from '../../domain/dates';
@@ -208,6 +209,14 @@ interface Pending extends BackupPreview {
   name: string;
 }
 
+/**
+ * A snapshot key split for display: daily snapshots are 'YYYY-MM-DD'; the copies kept just before an
+ * import, restore or restart replaced the data are 'YYYY-MM-DD HH:MM' (time set).
+ */
+export function snapshotWhen(key: string): { day: string; time: string | null } {
+  return key.length > 10 ? { day: key.slice(0, 10), time: key.slice(11) } : { day: key, time: null };
+}
+
 function Snapshots({ arm, setError }: { arm: Arm; setError: (e: string) => void }) {
   const [list, setList] = useState<SnapshotInfo[] | null>(null);
   useEffect(() => {
@@ -221,6 +230,7 @@ function Snapshots({ arm, setError }: { arm: Arm; setError: (e: string) => void 
 
   const restore = async (date: string) => {
     setError('');
+    const at = snapshotWhen(date);
     let data: LifeData | null = null;
     try {
       data = await loadSnapshot(date);
@@ -228,7 +238,7 @@ function Snapshots({ arm, setError }: { arm: Arm; setError: (e: string) => void 
       data = null;
     }
     if (!data) {
-      setError('这一天的快照读不出来了，换一天试试。');
+      setError(at.time ? '这份快照读不出来了，换一份试试。' : '这一天的快照读不出来了，换一天试试。');
       return;
     }
     const r = useStore.getState().importBackup(data);
@@ -236,24 +246,26 @@ function Snapshots({ arm, setError }: { arm: Arm; setError: (e: string) => void 
       setError(r.error);
       return;
     }
-    afterReplace({ icon: icon('clock'), kind: 'info', l1: '已恢复', l2: `回到 ${date} 的数据` });
+    afterReplace({ icon: icon('clock'), kind: 'info', l1: '已恢复', l2: at.time ? `回到 ${at.day} ${at.time} 替换前的数据` : `回到 ${date} 的数据` });
   };
 
   const day = today();
   return (
     <details className="adv msnaps">
       <summary>自动快照{list?.length ? `（${list.length}）` : ''}</summary>
-      <p className="mnote small">每天第一次改动前，会自动留一份当时的数据，保留最近 14 天。</p>
+      <p className="mnote small">每天第一次改动前，会自动留一份当时的数据，保留最近 14 天。导入、恢复或重新开始前，也会留一份当时的数据（保留最近 3 份）。</p>
       {list && !list.length && <p className="mnote small">还没有自动快照。</p>}
       {!!list?.length && (
         <ul className="snaps">
           {list.map(s => {
             const key = `snap:${s.date}`;
             const armed = arm.armed === key;
+            const at = snapshotWhen(s.date);
             return (
               <li key={s.date}>
                 <span className="sd">
-                  <span className="num">{s.date}{s.date === day ? '（今天）' : ''}</span>
+                  <span className="num">{at.day}{at.day === day ? '（今天）' : ''}</span>
+                  {at.time && <span className="stag small">替换前 · <span className="num">{at.time}</span></span>}
                   <span className="small">已达成 <span className="num">{s.done}/{s.all}</span></span>
                 </span>
                 <button
@@ -262,7 +274,7 @@ function Snapshots({ arm, setError }: { arm: Arm; setError: (e: string) => void 
                   data-date={s.date}
                   onClick={() => pressArmed(arm, key, () => void restore(s.date))}
                 >
-                  {armed ? '再点一次恢复' : '恢复到这一天'}
+                  {armed ? '再点一次恢复' : at.time ? '恢复这份' : '恢复到这一天'}
                 </button>
               </li>
             );
@@ -429,6 +441,10 @@ function Install() {
   const canInstall = usePwa(s => s.canInstall);
   const installed = usePwa(s => s.installed);
   const [msg, setMsg] = useState('');
+  // the browser's prompt can be used once: after 安装 the section stays to say how it went, also on
+  // a computer, where it would otherwise only show while there is a prompt to offer
+  const [prompted, setPrompted] = useState(false);
+  const msgRef = useRef<HTMLParagraphElement>(null);
   const platform = installPlatform();
   const ios = platform === 'iphone' || platform === 'ipad';
 
@@ -440,12 +456,18 @@ function Install() {
       </Section>
     );
   }
-  if (!phone && !ios && !canInstall) return null;
+  if (!phone && !ios && !canInstall && !prompted) return null;
 
   const install = async () => {
     SFX.click();
+    setPrompted(true);
     const r = await promptInstall();
-    setMsg(r === 'accepted' ? '' : r === 'dismissed' ? '没有安装。以后想装，可以再回到这里。' : '');
+    flushSync(() => setMsg(r === 'dismissed' ? '没有安装。以后想装，可以再回到这里。' : ''));
+    // the pressed 安装 is gone: keep keyboard focus in the menu (on the answer, if there is one)
+    const a = document.activeElement;
+    if (a && a !== document.body) return;
+    const m = msgRef.current;
+    (m?.textContent ? m : document.querySelector<HTMLElement>('.modal [role="dialog"]'))?.focus({ preventScroll: true });
   };
 
   return (
@@ -460,7 +482,8 @@ function Install() {
       ) : (
         <ol className="steps small">{INSTALL_STEPS.browser.map(s => <li key={s}>{s}</li>)}</ol>
       )}
-      {msg && <p className="mnote small">{msg}</p>}
+      {/* a live region has to exist before its text arrives, so it stays mounted (hidden while empty) */}
+      <p ref={msgRef} tabIndex={-1} role="status" className={msg ? 'mnote small' : 'sr-only'}>{msg}</p>
     </Section>
   );
 }

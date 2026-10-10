@@ -4,7 +4,7 @@ import { frame, icon, QMARK, XPORB } from '../../art/pixel';
 import { SFX } from '../../art/sfx';
 import { byId, childrenOf, isDone, statusOf, TYPE_NAME } from '../../domain/rules';
 import type { Achievement, NodeStatus } from '../../domain/types';
-import { useStore } from '../../store/store';
+import { undoProblem, useStore } from '../../store/store';
 import { bumpWithFx, completeWithFx } from '../actions';
 import { useUi } from '../uiStore';
 import { CloseButton } from './CloseButton';
@@ -14,14 +14,19 @@ import { LinkRow } from './LinkRow';
 export const HIDDEN_DESC = '这是一个隐藏进度。完成它的前置进度后，就能看到具体内容。';
 
 /**
- * When the last completion or undo happened here. Each swaps the complete and undo buttons in
- * place (the sticky action row keeps them there in a long panel), so the second click of a
- * double-click or a quick extra click would undo the completion, or complete it again with today's
- * date and without its note.
+ * Which achievement was last completed or undone here, and when. Each swaps its complete and undo
+ * buttons in place (the sticky action row keeps them there in a long panel), so the second click of
+ * a double-click or a quick extra click would undo the completion, or complete it again with
+ * today's date and without its note.
  */
-let lastDone = -Infinity;
-let lastUndo = -Infinity;
+interface Flip {
+  id: string;
+  at: number;
+}
+let lastDone: Flip = { id: '', at: -Infinity };
+let lastUndo: Flip = { id: '', at: -Infinity };
 const GUARD_MS = 900;
+const justFlipped = (f: Flip, id: string) => f.id === id && performance.now() - f.at < GUARD_MS;
 /** Two-step undo when a note would be lost: the second click must come after 450 ms and within 4 s. */
 const ARM_GUARD_MS = 450;
 const ARM_MS = 4000;
@@ -76,6 +81,7 @@ export function NodeDetail({ id }: { id: string }) {
   }, [armedAt]);
   const [refocus, setRefocus] = useState<{ act: Act; seq: number } | null>(null);
   const actRef = useRef<HTMLDivElement>(null);
+  const noteFlush = useRef<(() => void) | null>(null);
 
   // after an action re-rendered the buttons, put focus back on a sensible one (unless it is still
   // on an enabled control in the panel)
@@ -99,21 +105,33 @@ export function NodeDetail({ id }: { id: string }) {
   const after = (act: Act) => setRefocus(r => ({ act, seq: (r?.seq ?? 0) + 1 }));
 
   const complete = (e: MouseEvent) => {
-    if (e.detail > 1 || performance.now() - lastUndo < GUARD_MS) return;
-    if (completeWithFx(id)) lastDone = performance.now();
+    if (e.detail > 1 || justFlipped(lastUndo, id)) return;
+    if (completeWithFx(id)) lastDone = { id, at: performance.now() };
     setMsg('');
     after('complete');
   };
   const bump = (delta: 1 | -1) => {
-    if (bumpWithFx(id, delta)) lastDone = performance.now();
+    if (bumpWithFx(id, delta)) lastDone = { id, at: performance.now() };
     setMsg('');
     after(delta > 0 ? 'inc' : 'dec');
   };
   const undo = (e: MouseEvent) => {
-    if (e.detail > 1 || performance.now() - lastDone < GUARD_MS) return;
+    if (e.detail > 1 || justFlipped(lastDone, id)) return;
+    // a note still being typed counts as written (iOS keeps the field focused through the tap)
+    noteFlush.current?.();
+    const data = useStore.getState().data;
+    // a refused undo says why at once, instead of first asking to confirm
+    const problem = undoProblem(data, id);
+    if (problem) {
+      setArmedAt(0);
+      setMsg(problem);
+      after('undo');
+      return;
+    }
     // undo drops the done record, so a written note would be gone for good: ask twice
-    if (info?.note && !armedAt) {
+    if (data.done[id]?.note && !armedAt) {
       setArmedAt(performance.now());
+      setMsg('');
       SFX.click();
       return;
     }
@@ -121,7 +139,7 @@ export function NodeDetail({ id }: { id: string }) {
     setArmedAt(0);
     const r = useStore.getState().undo(id);
     if (r.ok) {
-      lastUndo = performance.now();
+      lastUndo = { id, at: performance.now() };
       SFX.click();
       setMsg('');
     } else {
@@ -173,7 +191,7 @@ export function NodeDetail({ id }: { id: string }) {
           )}
         </div>
       )}
-      {st === 'done' && info && <DoneFields id={id} date={info.date} note={info.note ?? ''} />}
+      {st === 'done' && info && <DoneFields id={id} date={info.date} note={info.note ?? ''} flushRef={noteFlush} />}
       <div className="dsec">
         <h3>奖励</h3>
         <ul className="rw">
