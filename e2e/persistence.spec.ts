@@ -7,6 +7,7 @@ import {
   dialog,
   expectHud,
   expectToast,
+  isTouch,
   node,
   openMenu,
   pressAgain,
@@ -189,6 +190,8 @@ test.describe('storage', () => {
 
 test.describe('replacing the data', () => {
   test('an import keeps a copy of the data it replaced, which the menu can bring back', async ({ page }, info) => {
+    // phones show one toast at a time: 「已恢复」 waits behind the ones from the completions and the import
+    test.slow(isTouch(info));
     await boot(page);
     // a backup with nothing done yet
     let menu = await openMenu(page);
@@ -217,7 +220,7 @@ test.describe('replacing the data', () => {
     await copy.getByRole('button', { name: '恢复这份' }).click();
     await pressAgain(page, copy.getByRole('button', { name: '再点一次恢复' }));
     await expect(menu).toBeHidden();
-    await expectToast(page, '已恢复', '替换前的数据');
+    await expectToast(page, '已恢复', '替换前的数据', 40_000);
     await expect(page.locator('.hud')).toContainText('已达成 2/97');
 
     await page.reload();

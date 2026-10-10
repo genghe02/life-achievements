@@ -380,7 +380,7 @@ function Data({ arm }: { arm: Arm }) {
       <p className="mnote small">
         {/* with nothing stored, the warning below says it instead */}
         {kind === 'memory' ? null : STORAGE_LINE}
-        {last === undefined ? null : last ? `上次备份：${last}。` : '还没有备份过。'}
+        {last === undefined ? null : last ? <span className="nw">上次备份：{last}。</span> : '还没有备份过。'}
       </p>
       {kind !== 'indexeddb' && <p className="mwarn small">{STORAGE_WARN[kind]}</p>}
       <div className="mrow">

@@ -113,11 +113,11 @@ export function AreaEditor({ id }: { id?: string }) {
       <form className="form" id={formId} noValidate onSubmit={submit}>
         {!id && <p className="mnote small">每个领域是一棵自己的进度树。新领域会带一个起点进度「新的开始」，之后可以改名、往后添加进度。</p>}
         <div className="row">
-          <label className="field">
+          <label className="field aname">
             <span className="small">名称（最多 {LIMITS.areaName} 个字）</span>
             <input className="inp" maxLength={LIMITS.areaName} placeholder="比如：音乐" value={name} onChange={e => setName(e.target.value)} data-autofocus="" />
           </label>
-          <label className="field">
+          <label className="field asub">
             <span className="small">副标题（可不填）</span>
             <input className="inp" maxLength={LIMITS.areaSubtitle} placeholder="比如：学会一样乐器" value={subtitle} onChange={e => setSubtitle(e.target.value)} />
           </label>

@@ -212,7 +212,7 @@ export function TradeModal() {
                 <span className="tact">
                   <button className="btn sm" type="button" data-edit={r.id} aria-label={`编辑「${r.name}」`} onClick={() => startEdit(r)}>编辑</button>
                   <button
-                    className={isArmed ? 'btn sm danger armed' : 'btn sm danger'}
+                    className={isArmed ? 'btn sm danger armed' : 'btn sm'}
                     type="button"
                     aria-label={isArmed ? `再点一次删除「${r.name}」` : `删除「${r.name}」`}
                     onClick={() => remove(r)}

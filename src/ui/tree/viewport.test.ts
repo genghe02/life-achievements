@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { geometry, GY } from '../../domain/layout';
 import { nodesOfArea, statusOf } from '../../domain/rules';
 import { starterData } from '../../domain/templates';
@@ -48,6 +48,33 @@ describe('Viewport', () => {
     size = { w: 360, h: 500 };
     ctl.reclamp(true);
     expect(ctl.view).toEqual(ctl.clamp(before));
+  });
+
+  it('moves the tree down from under a bar at the top, as far as the room below allows', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    try {
+      const { y0, y1 } = ctl.model.geo.content;
+      // the tree's top 30px sit under a bar whose visible box starts at 50px; plenty of room below
+      size = { w: 800, h: 800 };
+      ctl.set({ k: 1, x: ctl.view.x, y: 20 - y0 });
+      const bar = document.createElement('div');
+      bar.className = 'arr-hint';
+      bar.getBoundingClientRect = () => ({ left: 0, top: 0, right: 300, bottom: 46, width: 300, height: 46, x: 0, y: 0, toJSON: () => ({}) });
+      ctl.vp!.append(bar);
+      ctl.clearTop();
+      vi.advanceTimersByTime(1000);
+      expect(ctl.view.y + y0).toBe(50);
+
+      // too little room: it moves only as far as the bottom allows
+      size = { w: 800, h: 50 + (y1 - y0) - 10 };
+      ctl.set({ k: 1, x: ctl.view.x, y: 20 - y0 });
+      ctl.clearTop();
+      vi.advanceTimersByTime(1000);
+      expect(ctl.view.y + y1).toBe(size.h);
+      expect(ctl.view.y + y0).toBe(40);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('only re-clamps a view the user moved, and remembers it for the area', () => {

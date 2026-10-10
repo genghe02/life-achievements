@@ -20,6 +20,11 @@
 .ipick[open] .ipick-hint { display: none; }
 .ipick > summary:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
 
+/* ---------- area editor ---------- */
+/* the name is at most 6 characters, the subtitle longer: on narrow phones each gets its own line */
+.row > .field.aname { flex: 1 1 120px; }
+.row > .field.asub { flex: 3 1 200px; }
+
 /* ---------- node editor ---------- */
 .seg label > .small { color: inherit; opacity: .85; }
 /* gateways of an area root: one fold per other area */

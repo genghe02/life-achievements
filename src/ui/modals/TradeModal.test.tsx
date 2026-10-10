@@ -162,7 +162,7 @@ describe('TradeModal', () => {
     expect(s().data.rewards).toHaveLength(count);
     // after 4 s it disarms
     act(() => { vi.advanceTimersByTime(4000); });
-    expect(del().className).toBe('btn sm danger');
+    expect(del().className).toBe('btn sm');
     fireEvent.click(del());
     clock += 600;
     fireEvent.click(del());

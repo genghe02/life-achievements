@@ -195,6 +195,22 @@ export class Viewport {
     if (p && nearEdge(this.view, p.cx, p.cy, this.box(), side, top, bottom)) this.centerOn(id);
   }
 
+  /**
+   * A bar just appeared over the top of the tree (the arrange hint): ease the tree down from under
+   * it as far as the room below allows, so the top nodes can still be grabbed.
+   */
+  clearTop(): void {
+    const b = this.box();
+    const v = this.view;
+    const { y0, y1 } = this.model.geo.content;
+    if (!this.model.geo.nodes.length) return;
+    const under = b.t - (v.y + y0 * v.k);
+    // phones keep room for the floating zoom buttons while the sheet is closed
+    const room = b.h - (isPhone() && !this.sheetOpen() ? 44 : 0) - (v.y + y1 * v.k);
+    const dy = Math.min(under, room);
+    if (dy >= 1) this.animateTo({ ...v, y: v.y + dy });
+  }
+
   /** Show the current area's remembered view, or its home view. */
   restore(): void {
     this.stop();

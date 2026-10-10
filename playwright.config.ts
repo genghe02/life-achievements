@@ -1,5 +1,7 @@
+import fs from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
+// a preinstalled Chromium when there is one (the cloud dev box); otherwise Playwright's own (CI)
 const chrome = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 // E2E_BASE_URL points the suite at a server that is already running (an ad-hoc preview on another
 // port); then no build or server is started here.
@@ -16,7 +18,7 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL,
-    launchOptions: { executablePath: chrome },
+    launchOptions: fs.existsSync(chrome) ? { executablePath: chrome } : {},
     trace: 'retain-on-failure',
   },
   webServer: external

@@ -11,7 +11,7 @@ import { areaLocked, displayTitle, statusOf } from '../../domain/rules';
 import type { NodeStatus } from '../../domain/types';
 import { useStore } from '../../store/store';
 import { onCompleted } from '../actions';
-import { setToastArea } from '../fx/toastQueue';
+import { repositionToasts, setToastArea } from '../fx/toastQueue';
 import { usePhone, useShortDesktop, useSideways } from '../hooks/media';
 import { useZoomSlot } from '../hooks/zoomSlot';
 import { useUi } from '../uiStore';
@@ -200,6 +200,13 @@ export function TreeView() {
   }, [ctl]);
   useEffect(() => hideTip(), [aid, arrange]);
 
+  // the arrange hint covers the top of the tree: move the tree out from under it when there is room
+  useEffect(() => {
+    if (!arrange) return;
+    const raf = requestAnimationFrame(() => ctl.clearTop());
+    return () => cancelAnimationFrame(raf);
+  }, [ctl, arrange]);
+
   // ---- selection: on phones bring the node out from under the sheet (also when a resize makes
   // this a phone while something is selected) ----
   useEffect(() => {
@@ -246,6 +253,12 @@ export function TreeView() {
 
   const dim = BG_DIM[bg];
   const locked = aid ? areaLocked(data, aid) : false;
+
+  // the locked-area banner or the arrange hint came or went: toasts on screen move below it (or back up)
+  useLayoutEffect(() => {
+    repositionToasts();
+  }, [aid, arrange, locked]);
+
   const controls = <ZoomControls ctl={ctl} />;
 
   return (

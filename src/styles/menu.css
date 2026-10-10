@@ -16,6 +16,8 @@
 .msec.settings > div { min-height: 32px; }
 .msec.settings .btn { min-width: 48px; }
 
+/* 「上次备份：2026-10-10。」 stays on one line (no break inside the date) */
+.msec .nw { white-space: nowrap; }
 /* no one-character last lines in the notes */
 .msec .mnote, .msec .mwarn { text-wrap: pretty; }
 
