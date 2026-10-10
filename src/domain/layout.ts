@@ -255,6 +255,46 @@ export function findSlot(nodes: readonly GridNode[], parents: readonly string[],
   return null;
 }
 
+export interface Placement {
+  x: number;
+  y: number;
+  /** Make room first: every other node of the area at or below this row moves down one row. */
+  insertRow?: number;
+}
+
+/**
+ * Where a new (or re-placed) node goes. Tries findSlot first; when the tree is too crowded there,
+ * it makes room by inserting an empty row and placing the node in it. Moving a whole band of rows
+ * down by one keeps every above/below relation, so the rest of the tree stays as clean as it was.
+ * Rows nearest the parents are tried first. Null only when even that cannot work.
+ */
+export function placeNode(nodes: readonly GridNode[], parents: readonly string[], id?: string): Placement | null {
+  const slot = findSlot(nodes, parents, id);
+  if (slot) return slot;
+  const rest = id ? nodes.filter(n => n.id !== id) : nodes;
+  const by = new Map(rest.map(n => [n.id, n]));
+  const ps = parents.map(p => by.get(p)).filter((p): p is GridNode => !!p);
+  if (!ps.length) return null;
+  const base = conflicts(rest);
+  const x0 = Math.max(...ps.map(p => p.x)) + 1;
+  const yc = ps.reduce((a, p) => a + p.y, 0) / ps.length;
+  const ys = rest.map(n => n.y);
+  const rows: number[] = [];
+  for (let r = Math.min(...ys); r <= Math.max(...ys) + 1; r++) rows.push(r);
+  // nearest to the parents first; on a tie prefer the row below
+  rows.sort((a, b) => Math.abs(a - yc - 0.5) - Math.abs(b - yc - 0.5) || b - a);
+  const probe: GridNode = { id: id ?? '__new', x: 0, y: 0, parents };
+  for (const r of rows) {
+    const shifted = rest.map(n => (n.y >= r ? { ...n, y: n.y + 1 } : n));
+    if (shifted.some(n => !onGrid(n.x, n.y))) continue;
+    for (let x = x0; x < x0 + 4; x++) {
+      if (!onGrid(x, r)) continue;
+      if (conflicts([...shifted, { ...probe, x, y: r }]) <= base) return { x, y: noNegZero(r), insertRow: r };
+    }
+  }
+  return null;
+}
+
 export type PlaceProblem = 'missing' | 'root' | 'column' | 'occupied' | 'tangle';
 
 /**

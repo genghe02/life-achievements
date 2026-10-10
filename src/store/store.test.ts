@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { conflicts, findSlot } from '../domain/layout';
+import { conflicts, placeNode } from '../domain/layout';
 import { levelOf, totals } from '../domain/level';
 import { byId, nodesOfArea, statusOf } from '../domain/rules';
 import { blankData } from '../domain/templates';
@@ -524,9 +524,21 @@ describe('saveAchievement: create', () => {
     expect(res.ok).toBe(true);
   });
 
-  it('says when a crowded node has no room', () => {
+  it('makes room under a crowded node by inserting a row', () => {
     const env = setup();
-    expect(env.s().saveAchievement(input({ areaId: 'bond', parents: ['r_new_friends'] }))).toEqual({ ok: false, error: MSG.noRoomOne });
+    const before = nodesOfArea(env.data(), 'bond');
+    const res = env.s().saveAchievement(input({ areaId: 'bond', parents: ['r_new_friends'] }));
+    expect(res.ok).toBe(true);
+    const after = nodesOfArea(env.data(), 'bond');
+    expect(after).toHaveLength(before.length + 1);
+    expect(conflicts(after)).toBe(0);
+    // the existing nodes keep their order: some moved down by exactly one row, none moved up or sideways
+    for (const b of before) {
+      const a = after.find(n => n.id === b.id)!;
+      expect(a.x).toBe(b.x);
+      expect([b.y, b.y + 1]).toContain(a.y);
+    }
+    expect(after.some(n => n.y !== before.find(b => b.id === n.id)?.y)).toBe(true);
   });
 
   it('says when prerequisites are too far apart', () => {
@@ -534,7 +546,7 @@ describe('saveAchievement: create', () => {
     const ns = nodesOfArea(env.data(), 'origin');
     let pair: string[] | null = null;
     for (let i = 0; i < ns.length && !pair; i++) {
-      for (let j = i + 1; j < ns.length && !pair; j++) if (!findSlot(ns, [ns[i].id, ns[j].id])) pair = [ns[i].id, ns[j].id];
+      for (let j = i + 1; j < ns.length && !pair; j++) if (!placeNode(ns, [ns[i].id, ns[j].id])) pair = [ns[i].id, ns[j].id];
     }
     expect(pair).not.toBeNull();
     expect(env.s().saveAchievement(input({ parents: pair! }))).toEqual({ ok: false, error: MSG.noRoom });

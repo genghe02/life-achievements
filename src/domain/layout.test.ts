@@ -10,6 +10,7 @@ import {
   GX,
   type GridNode,
   PAD,
+  placeNode,
   placeProblem,
 } from './layout';
 import { nodesOfArea, statusOf } from './rules';
@@ -408,4 +409,41 @@ describe('connectors match the demo', () => {
       });
     }
   }
+});
+
+describe('placeNode', () => {
+  const starter = starterData(new Date('2026-10-10'));
+
+  it('returns the findSlot cell when there is room', () => {
+    const ns = nodesOfArea(starter, 'origin');
+    expect(placeNode(ns, ['o_start'])).toEqual(findSlot(ns, ['o_start']));
+  });
+
+  it('finds a place under every single starter node, keeping the tree clean', () => {
+    for (const a of starter.areas) {
+      const ns = nodesOfArea(starter, a.id);
+      for (const n of ns) {
+        const p = placeNode(ns, [n.id]);
+        expect(p, `${a.id}/${n.id}`).not.toBeNull();
+        const shifted = ns.map(m => (p!.insertRow !== undefined && m.y >= p!.insertRow ? { ...m, y: m.y + 1 } : m));
+        const probe = { id: '__new', x: p!.x, y: p!.y, parents: [n.id] };
+        expect(conflicts([...shifted, probe]), `${a.id}/${n.id}`).toBe(0);
+        expect(p!.x).toBeGreaterThan(n.x);
+      }
+    }
+  });
+
+  it('inserts a row when the crowded cells around a parent are all taken', () => {
+    const ns = nodesOfArea(starter, 'bond');
+    expect(findSlot(ns, ['r_new_friends'])).toBeNull();
+    const p = placeNode(ns, ['r_new_friends']);
+    expect(p?.insertRow).toBeTypeOf('number');
+  });
+
+  it('re-places an existing node to the left of its children', () => {
+    const ns = nodesOfArea(starter, 'origin');
+    const kid = ns.find(n => n.parents.length && ns.some(c => c.parents.includes(n.id)))!;
+    const p = placeNode(ns, kid.parents, kid.id)!;
+    for (const c of ns.filter(c => c.parents.includes(kid.id))) expect(p.x).toBeLessThan(c.x);
+  });
 });

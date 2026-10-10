@@ -101,7 +101,10 @@ connectorSegments(data, areaId, geo): { d: string, state: NodeStatus }[]
   // The stem into each child is coloured by the child's status.
   // Buses that meet end to end in the same gap get ±6px lanes.
 conflicts(nodes): number    // count of geometry problems (rules below)
-findSlot(nodes, parents): { x, y } | null  // a cell after all parents with no new conflicts
+findSlot(nodes, parents, id?): { x, y } | null  // a cell after all parents with no new conflicts
+placeNode(nodes, parents, id?): { x, y, insertRow? } | null
+  // findSlot, or else make room: insert an empty row (the area's nodes at or below insertRow move
+  // down one row, which keeps the tree's shape) and place the node there. The store applies the shift.
 canPlace(nodes, id, x, y): boolean         // moving id there keeps the column rule and adds no conflict
 
 // validate.ts
@@ -165,7 +168,8 @@ blankData(now: Date): LifeData     // the same 7 areas, each with only its root 
    - Request `navigator.storage.persist()` after the first completion.
 10. **Persistence safety:**
     - Debounced save (300 ms) plus a flush on `visibilitychange` (hidden) and `pagehide`.
-    - Keep one snapshot per day for the last 14 days in a separate table.
+    - Keep one snapshot per day for the last 14 days in a separate table. Each snapshot holds the document as it was before that day's first save, so a reset done first thing can still be recovered.
+    - On `pagehide` and `visibilitychange` (hidden), a save still waiting in the debounce is also written synchronously to localStorage (`<db>:unsaved`), because an IndexedDB write started during unload may never land. On load the newest copy by `updatedAt` wins, and the copy is removed after the next write lands.
     - If IndexedDB is unavailable, fall back to localStorage and show a one-line warning in the menu's 数据 section.
 
 ## UI copy rules

@@ -5,7 +5,7 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { isIconName, isAreaBg, isNodeType } from '../domain/catalog';
 import { isDateStr, isFuture, today } from '../domain/dates';
 import { newId } from '../domain/ids';
-import { canPlace, findSlot, placeProblem } from '../domain/layout';
+import { canPlace, placeNode, placeProblem, type Placement } from '../domain/layout';
 import { DEF_PTS, DEF_XP, levelOf, totals } from '../domain/level';
 import {
   byId,
@@ -356,27 +356,35 @@ export function createAppStore(deps: StoreDeps = {}): UseBoundStore<StoreApi<App
         if (reward) fields.reward = reward;
         if (input.hidden) fields.hidden = true;
 
+        // a placement that inserted a row moves the rest of the area down first
+        const makeRoom = (list: Achievement[], place: Placement, skip?: string): Achievement[] =>
+          place.insertRow === undefined
+            ? list
+            : list.map(m => (m.areaId === area.id && m.id !== skip && m.y >= place.insertRow! ? { ...m, y: m.y + 1 } : m));
+
         if (!existing) {
-          const slot = findSlot(nodesOfArea(data, area.id), parents);
-          if (!slot) return err(parents.length > 1 ? MSG.noRoom : MSG.noRoomOne);
-          const node: Achievement = { id: newId('n'), areaId: area.id, ...fields, x: slot.x, y: slot.y };
-          commit({ ...data, achievements: [...data.achievements, node] });
+          const place = placeNode(nodesOfArea(data, area.id), parents);
+          if (!place) return err(parents.length > 1 ? MSG.noRoom : MSG.noRoomOne);
+          const node: Achievement = { id: newId('n'), areaId: area.id, ...fields, x: place.x, y: place.y };
+          commit({ ...data, achievements: [...makeRoom(data.achievements, place), node] });
           return { ok: true, id: node.id };
         }
 
         const node: Achievement = { id: existing.id, areaId: existing.areaId, ...fields, x: existing.x, y: existing.y };
         const sameParents =
           parents.length === existing.parents.length && parents.every(p => existing.parents.includes(p));
+        let others = data.achievements;
         if (!isRoot && !sameParents) {
           const areaNodes = nodesOfArea(data, area.id).map(m => (m.id === node.id ? node : m));
           if (!canPlace(areaNodes, node.id, node.x, node.y)) {
-            const slot = findSlot(areaNodes, parents, node.id);
-            if (!slot) return err(parents.length > 1 ? MSG.noRoom : MSG.noRoomOne);
-            node.x = slot.x;
-            node.y = slot.y;
+            const place = placeNode(areaNodes, parents, node.id);
+            if (!place) return err(parents.length > 1 ? MSG.noRoom : MSG.noRoomOne);
+            node.x = place.x;
+            node.y = place.y;
+            others = makeRoom(others, place, node.id);
           }
         }
-        const next: LifeData = { ...data, achievements: data.achievements.map(m => (m.id === node.id ? node : m)) };
+        const next: LifeData = { ...data, achievements: others.map(m => (m.id === node.id ? node : m)) };
         commit({ ...next, ...fixCounter(next, node) });
         return { ok: true, id: node.id };
       },
