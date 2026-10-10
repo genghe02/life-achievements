@@ -15,7 +15,8 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  // on GitHub Actions failures also show as annotations (readable without downloading the log)
+  reporter: process.env.CI ? [['github'], ['list']] : [['list']],
   use: {
     baseURL,
     launchOptions: fs.existsSync(chrome) ? { executablePath: chrome } : {},
