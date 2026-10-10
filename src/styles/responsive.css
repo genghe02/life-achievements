@@ -24,7 +24,8 @@
   .detail::after { display: block; }
   .detail.open { transform: none; visibility: visible; transition-delay: 0s, 0s; }
   .dscroll { padding: 14px 14px 16px; }
-  .dact { bottom: 4px; margin: 0 -10px -12px; padding: 10px 10px 12px; }
+  .detail .dscroll { clip-path: inset(4px); }
+  .dact { bottom: -16px; margin: 0 -10px -12px; padding: 10px 10px 12px; }
   .dclose { display: inline-flex; margin-left: auto; align-self: flex-start; }
   .vhint { display: none; }
   .trade .arr { display: none; }

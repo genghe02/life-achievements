@@ -23,7 +23,10 @@ function useEscapeToDeselect() {
       // blur) instead of closing the panel and losing the edit
       const t = e.target;
       if (t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) {
-        t.blur();
+        // hand focus to the panel heading (tabIndex -1) so keyboard users don't land on <body>
+        const head = t.closest('#detail')?.querySelector<HTMLElement>('.dh h2');
+        if (head) head.focus({ preventScroll: true });
+        else t.blur();
         return;
       }
       if (ui.sel) ui.select(null);
