@@ -1,0 +1,19 @@
+/* ---------- onboarding (first launch): 示例模板 or 空白开始 ---------- */
+.onb { height: 100%; overflow: auto; display: grid; place-items: center;
+  padding: calc(16px + var(--safe-t)) max(16px, var(--safe-r)) calc(16px + var(--safe-b)) max(16px, var(--safe-l)); }
+.onb-box { width: min(620px, 100%); display: flex; flex-direction: column; gap: 16px; padding: 22px 22px 20px; }
+.onb-head { display: flex; align-items: center; gap: 14px; }
+.onb-head h1 { margin: 0; font-size: 32px; line-height: 32px; font-weight: 400; color: var(--ink); }
+.onb-head p { margin: 6px 0 0; color: var(--ink-soft); }
+.onb-lead { margin: 0; color: var(--ink); }
+.onb-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.onb-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 140px; padding: 14px; border: 0; cursor: pointer; text-align: left;
+  color: var(--ink); background: #b0b0b0; box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 #e0e0e0, inset -4px -4px 0 #7b7b7b; }
+.onb-choice .oc-h { display: flex; align-items: center; gap: 10px; }
+.onb-choice b { font-weight: 400; color: var(--ink); }
+.onb-choice .oc-d { color: var(--ink-soft); }
+.onb-choice:focus-visible { outline: none; background: #c5c5ff; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #e6e6ff, inset -4px -4px 0 #8a8ab0; }
+@media (hover: hover) { .onb-choice:hover { background: #c5c5ff; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #e6e6ff, inset -4px -4px 0 #8a8ab0; } }
+.onb-choice:active { box-shadow: inset 0 0 0 2px #fff, inset -4px -4px 0 #e6e6ff, inset 4px 4px 0 #8a8ab0; }
+.onb-choice[disabled] { cursor: progress; opacity: .7; }
+.onb-note { margin: 0; color: var(--ink-soft); }

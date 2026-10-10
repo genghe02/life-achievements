@@ -1,0 +1,124 @@
+/* Layout: a Minecraft GUI over a dim dirt backdrop. HUD strip on top, tab row clipped onto the
+   advancement window, tree viewport on the left and the detail panel on the right
+   (the detail panel becomes a bottom sheet on phones). */
+
+/* Root-absolute so Vite rewrites them to the public folder relative to the built CSS (base './'). */
+@font-face {
+  font-family: "Unifont";
+  src: url("/fonts/unifont.woff2") format("woff2");
+  font-display: block;
+}
+@font-face {
+  font-family: "FusionPixel12";
+  src: url("/fonts/fusion-pixel-12.woff2") format("woff2");
+  font-display: block;
+}
+
+:root {
+  --night: #120d0a;
+  --face: #c6c6c6; --hi: #ffffff; --lo: #555555;
+  --ink: #3f3f3f; --ink-soft: #4a4a4a;
+  --slot: #8b8b8b; --slot-lo: #373737;
+  --btn: #6f6f6f; --btn-hi: #a9a9a9; --btn-lo: #3d3d3d; --btn-off: #2c2c2c;
+  --go: #3c8527; --go-hi: #6cc24a; --go-lo: #1d4d12;
+  --bad: #9c2a2a; --bad-hi: #d0584f; --bad-lo: #4f1010;
+  --toast: #212121; --toast-edge: #5b5b5b;
+  --t-white: #ffffff; --t-grey: #aaaaaa; --t-yellow: #ffff55; --t-gold: #ffaa00; --t-green: #55ff55;
+  --t-xp: #80ff20; --t-purple: #d26bff; --t-pink: #ff88ff; --t-red: #ff5555; --t-red-ink: #a01818; --t-ok-ink: #1f5a06;
+  --bar-blue: #1f5f96; --bar-gold: #b5871a;
+  --line-locked: #5d5d5d; --line-open: #ffffff; --line-done: #ffd23f;
+  --font-ui: "Unifont", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-small: "FusionPixel12", "Unifont", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --notch: polygon(2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px), 0 2px, 2px 2px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0; overflow: hidden;
+  background-color: var(--night);
+  /* --dirt is set at startup to a generated 16x16 dirt texture (main.tsx) */
+  background-image: linear-gradient(rgba(12, 8, 6, .8), rgba(12, 8, 6, .8)), var(--dirt, none);
+  background-size: auto, 64px 64px;
+  color: var(--t-white);
+  font: 16px/20px var(--font-ui);
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  user-select: none; -webkit-user-select: none;
+  overscroll-behavior: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+img { image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: pixelated; }
+.small { font: 12px/14px var(--font-small); }
+.num { font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+.app {
+  --gap: 8px;
+  height: 100%; max-width: 1480px; margin-inline: auto;
+  padding-inline: max(16px, var(--safe-l)) max(16px, var(--safe-r));
+  padding-block: calc(10px + var(--safe-t)) calc(12px + var(--safe-b));
+  display: flex; flex-direction: column; gap: var(--gap);
+}
+
+/* first paint while IndexedDB is read */
+.boot { height: 100%; display: grid; place-items: center; color: var(--t-grey); text-shadow: 2px 2px 0 #000; }
+.boot span { animation: bootblink 1.2s steps(2) infinite; }
+@keyframes bootblink { 50% { opacity: .55; } }
+
+/* ---------- Minecraft panel ---------- */
+.mcp { position: relative; isolation: isolate; color: var(--ink); }
+.mcp::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--pf, var(--face));
+  box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 var(--ph, var(--hi)), inset -4px -4px 0 var(--pl, var(--lo));
+  clip-path: var(--notch); }
+.mcp::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(#000 0 0) 2px 2px / 2px 2px no-repeat,
+    linear-gradient(#000 0 0) calc(100% - 2px) 2px / 2px 2px no-repeat,
+    linear-gradient(#000 0 0) 2px calc(100% - 2px) / 2px 2px no-repeat,
+    linear-gradient(#000 0 0) calc(100% - 2px) calc(100% - 2px) / 2px 2px no-repeat; }
+
+/* ---------- buttons ---------- */
+.btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 4px 14px; border: 0; cursor: pointer; white-space: nowrap;
+  color: var(--t-white); text-shadow: 2px 2px 0 #383838; background: var(--btn);
+  box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 var(--btn-hi), inset -4px -4px 0 var(--btn-lo); }
+.btn:focus-visible { outline: none; background: #858585;
+  box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #bdbdbd, inset -4px -4px 0 #4a4a4a; }
+@media (hover: hover) { .btn:hover { background: #858585; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #bdbdbd, inset -4px -4px 0 #4a4a4a; } }
+.btn:active { box-shadow: inset 0 0 0 2px #fff, inset -4px -4px 0 var(--btn-hi), inset 4px 4px 0 var(--btn-lo); }
+.btn[disabled] { cursor: not-allowed; background: var(--btn-off); color: #9a9a9a; text-shadow: none; box-shadow: inset 0 0 0 2px #000; }
+.btn.go { background: var(--go); box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 var(--go-hi), inset -4px -4px 0 var(--go-lo); }
+.btn.go:focus-visible { background: #4a9a33; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #86d665, inset -4px -4px 0 #24591a; }
+@media (hover: hover) { .btn.go:hover { background: #4a9a33; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #86d665, inset -4px -4px 0 #24591a; } }
+.btn.go[disabled] { background: var(--btn-off); box-shadow: inset 0 0 0 2px #000; }
+/* destructive action; .armed is the second step of a two-step confirm ("再点一次确认") */
+.btn.danger { background: var(--bad); box-shadow: inset 0 0 0 2px #000, inset 4px 4px 0 var(--bad-hi), inset -4px -4px 0 var(--bad-lo); }
+.btn.danger:focus-visible { background: #b13434; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #e27268, inset -4px -4px 0 #5c1414; }
+@media (hover: hover) { .btn.danger:hover { background: #b13434; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #e27268, inset -4px -4px 0 #5c1414; } }
+.btn.armed { background: #c62f2f; color: #fff; text-shadow: 2px 2px 0 #4f1010;
+  box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #ff7a6e, inset -4px -4px 0 #6a1212; animation: armed 1s steps(2) infinite; }
+@keyframes armed { 50% { background: #a42424; } }
+.btn.danger[disabled], .btn.armed[disabled] { background: var(--btn-off); color: #9a9a9a; text-shadow: none; box-shadow: inset 0 0 0 2px #000; animation: none; }
+/* toggle buttons (aria-pressed) look pushed in while on */
+.btn[aria-pressed="true"] { background: #4a4a4a; box-shadow: inset 0 0 0 2px #fff, inset -4px -4px 0 #6f6f6f, inset 4px 4px 0 #2a2a2a; }
+.btn.sq { width: 40px; padding: 0; }
+.btn.sm { min-height: 32px; padding: 2px 10px; font: 12px/14px var(--font-small); text-shadow: 1px 1px 0 #383838; }
+.btn.sm.sq { width: 32px; }
+.btn img { width: 16px; height: 16px; }
+
+/* ---------- inventory slot ---------- */
+.slot { flex: none; width: 36px; height: 36px; display: grid; place-items: center; background: var(--slot);
+  box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 #fff; }
+.slot img { width: 32px; height: 32px; }
+.slot.mini { width: 24px; height: 24px; box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 #fff; }
+.slot.mini img { width: 16px; height: 16px; }

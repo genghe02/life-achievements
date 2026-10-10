@@ -1,0 +1,44 @@
+/* ---------- modals ---------- */
+.modal { position: fixed; inset: 0; z-index: 40; display: grid; grid-template-rows: minmax(0, 1fr); place-items: center;
+  padding: max(16px, var(--safe-t)) max(16px, var(--safe-r)) max(16px, var(--safe-b)) max(16px, var(--safe-l)); background: rgba(0, 0, 0, .62); }
+.mbox { width: min(560px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; }
+.mhead { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 14px 4px 16px; }
+.mhead h2 { margin: 0; min-width: 0; font-size: 16px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mscroll { flex: 1; min-height: 0; overflow: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 14px; overscroll-behavior: contain; }
+.mnote { margin: 0; color: var(--ink-soft); }
+
+/* ---------- trade (rewards) ---------- */
+.trades { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.trade { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #b0b0b0; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7b7b7b; }
+.trade .cost { flex: none; display: flex; align-items: center; gap: 0; min-width: 58px; }
+.trade .cost img { width: 32px; height: 32px; }
+.trade .cost b { font-weight: 400; color: var(--ink); }
+.trade.poor .cost b { color: var(--t-red-ink); }
+.trade .arr { flex: none; width: 20px; height: 18px; }
+.trade .tn { flex: 1; min-width: 0; color: var(--ink); overflow-wrap: anywhere; }
+/* edit / delete buttons on a reward row, and the row turned into an inline form */
+.trade .tact { flex: none; display: flex; gap: 4px; }
+.trade.editing { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px; }
+.tlog { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; color: var(--ink-soft);
+  max-height: 220px; overflow: auto; scrollbar-width: thin; scrollbar-color: #6f6f6f #9a9a9a; }
+
+/* ---------- menu: 统计 / 设置 / 数据 / 重新开始 / 添加到主屏幕 ---------- */
+.msec { display: flex; flex-direction: column; gap: 8px; }
+.msec + .msec { padding-top: 14px; box-shadow: inset 0 2px 0 #8b8b8b, inset 0 4px 0 #e8e8e8; }
+.msec > h3 { margin: 0; font: 12px/14px var(--font-small); color: var(--ink-soft); letter-spacing: .1em; }
+.mrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mwarn { margin: 0; padding: 6px 10px; background: #000; color: var(--t-yellow); box-shadow: inset 0 0 0 2px #555; text-shadow: 1px 1px 0 #333; }
+.mok { margin: 0; color: var(--t-ok-ink); }
+.mok:empty { display: none; }
+/* import preview before replacing data */
+.msum { display: flex; flex-direction: column; gap: 8px; padding: 10px; background: #b0b0b0; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7b7b7b; color: var(--ink); }
+.steps { margin: 0; padding-left: 1.6em; display: flex; flex-direction: column; gap: 4px; color: var(--ink); }
+.stat-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.stat-rows li { display: grid; grid-template-columns: 24px 3.5em minmax(0, 1fr) 3.5em; align-items: center; gap: 8px; }
+.stat-rows li > img { width: 16px; height: 16px; justify-self: center; }
+.stat-rows li > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-rows li > span:last-child { text-align: right; color: var(--ink-soft); }
+.stat-rows .ov-bar { margin: 0; height: 10px; }
+.kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.settings { display: flex; flex-direction: column; gap: 8px; }
+.settings > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

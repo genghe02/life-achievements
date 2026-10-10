@@ -1,0 +1,31 @@
+/* ---------- toasts & effects ----------
+   Toasts sit at the top-right of the visible tree area (positioned from JS); XP orbs and floating
+   text are drawn above them. */
+.toasts { position: fixed; z-index: 60; top: calc(66px + var(--safe-t)); right: 16px; width: 320px; max-width: calc(100vw - 32px);
+  display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; background: var(--toast); clip-path: var(--notch);
+  box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--toast-edge); animation: tin .4s cubic-bezier(.2, .8, .3, 1) both; }
+.toast.out { animation: tout .35s ease-in both; }
+.toast .slot { background: #3a3a3a; box-shadow: none; }
+.toast b { display: block; font-weight: 400; color: var(--t-yellow); text-shadow: 2px 2px 0 #3f3f15; }
+.toast.k-challenge b { color: var(--t-pink); text-shadow: 2px 2px 0 #3f223f; }
+.toast.k-level b { color: var(--t-xp); text-shadow: 2px 2px 0 #20400a; }
+.toast.k-error b { color: var(--t-red); text-shadow: 2px 2px 0 #3f1515; }
+.toast > span:last-child { min-width: 0; }
+.toast .l2 { display: block; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes tin { from { transform: translateX(110%); } }
+@keyframes tout { to { transform: translateX(110%); opacity: 0; } }
+.px { position: fixed; z-index: 61; width: 6px; height: 6px; margin: -3px 0 0 -3px; pointer-events: none; }
+.orb { position: fixed; z-index: 62; width: 10px; height: 10px; margin: -5px 0 0 -5px; pointer-events: none; background: #b9ff3a;
+  box-shadow: inset -2px -2px 0 #4c9a12, inset 2px 2px 0 #f2ffb0, 0 0 0 2px #1d3d05; }
+.float { position: fixed; z-index: 61; pointer-events: none; transform: translateX(-50%); white-space: nowrap; color: var(--t-xp);
+  text-shadow: 1px 1px 0 #000, -1px 0 0 #000, 0 -1px 0 #000, 1px 0 0 #000, 0 1px 0 #000; }
+
+/* ---------- update bar (「有新版本」 + 「更新」) ---------- */
+.updbar { position: fixed; z-index: 70; left: 50%; bottom: calc(16px + var(--safe-b)); transform: translateX(-50%);
+  width: max-content; max-width: calc(100vw - 32px); display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px;
+  background: var(--toast); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; clip-path: var(--notch);
+  box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--toast-edge); animation: updin .35s cubic-bezier(.2, .8, .3, 1) both; }
+.updbar > span { min-width: 0; }
+.updbar b { font-weight: 400; color: var(--t-yellow); text-shadow: 2px 2px 0 #3f3f15; }
+@keyframes updin { from { transform: translate(-50%, calc(100% + 24px)); } }

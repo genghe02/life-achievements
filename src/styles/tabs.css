@@ -1,0 +1,24 @@
+/* ---------- tabs ----------
+   .tabs scrolls sideways and overlaps the window by 6px; .tablist (role=tablist) holds the area
+   tabs and .tab-add (the 「+」 tab that creates an area) follows it. */
+.tabs { flex: none; position: relative; display: flex; align-items: flex-end; gap: 4px; padding-inline: 8px; margin-bottom: calc(-6px - var(--gap));
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tablist { flex: none; display: flex; align-items: flex-end; gap: 4px; }
+.tab { flex: none; z-index: 0; display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 14px 4px 10px; border: 0; cursor: pointer;
+  --pf: #9a9a9a; --ph: #c4c4c4; --pl: #5a5a5a; }
+.tab img { width: 32px; height: 32px; }
+.tab .tn { color: var(--ink); }
+.tab .tc { color: var(--ink); }
+.tab .tlk { position: absolute; left: 30px; top: 26px; width: 14px; height: 16px; }
+@media (hover: hover) { .tab:hover { --pf: #b3b3b3; } }
+.tab:focus-visible { outline: 2px solid #fff; outline-offset: -6px; }
+.tab[aria-selected="true"] { z-index: 2; height: 54px; padding-bottom: 8px; --pf: var(--face); --ph: var(--hi); }
+.tab[aria-selected="true"]::before { box-shadow: inset 2px 2px 0 #000, inset -2px 0 0 #000, inset 4px 4px 0 var(--hi), inset -4px 0 0 var(--lo);
+  clip-path: polygon(2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% 100%, 0 100%, 0 2px, 2px 2px); }
+.tab[aria-selected="true"]::after { background:
+    linear-gradient(#000 0 0) 2px 2px / 2px 2px no-repeat,
+    linear-gradient(#000 0 0) calc(100% - 2px) 2px / 2px 2px no-repeat; }
+.tab-add { justify-content: center; width: 46px; padding: 0 0 4px; --pf: #7d7d7d; --ph: #a4a4a4; --pl: #4a4a4a; }
+.tab-add .tplus { font-size: 32px; line-height: 32px; color: var(--ink); }
+@media (hover: hover) { .tab-add:hover { --pf: #a0a0a0; } }

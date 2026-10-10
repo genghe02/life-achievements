@@ -1,0 +1,22 @@
+/* ---------- HUD: level, rank, XP bar, emeralds, menu ---------- */
+.hud { flex: none; display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.lv { min-width: 44px; text-align: center; font-size: 32px; line-height: 32px; color: var(--t-xp); font-variant-numeric: tabular-nums;
+  text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 2px 2px #000, -2px -2px #000, 2px -2px #000, -2px 2px #000; }
+.lv.pop { animation: lvpop .8s steps(8); }
+@keyframes lvpop { 0%, 50% { color: #fff; transform: scale(1.25); } 100% { transform: none; } }
+.xp { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.xp-top { display: flex; justify-content: space-between; gap: 8px; color: var(--t-grey); text-shadow: 1px 1px 0 #000; white-space: nowrap; }
+.xp-top .rk { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.xp-top b { font-weight: 400; color: var(--t-yellow); }
+.xpbar { position: relative; height: 10px; background: #2b2b2b; box-shadow: 0 0 0 2px #000; }
+.xpbar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#c6ff7a 0 2px, #80ff20 2px 6px, #4c9a12 6px); transition: width .6s ease-out; }
+.xpbar::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(100% / 18 - 2px), rgba(0, 0, 0, .5) calc(100% / 18 - 2px) calc(100% / 18)); }
+.pill { flex: none; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px 0 4px; border: 0; cursor: pointer;
+  background: rgba(0, 0, 0, .6); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px #3a3a3a; color: var(--t-white); text-shadow: 2px 2px 0 #3f3f3f; }
+.pill .small { text-shadow: 1px 1px 0 #3f3f3f; }
+.pill img { width: 32px; height: 32px; }
+.pill:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #3a3a3a; }
+@media (hover: hover) { .pill:hover { box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #3a3a3a; } }
+.pill .pl { color: var(--t-grey); }
+#btnMenu img { width: 20px; height: 20px; }

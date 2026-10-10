@@ -1,0 +1,53 @@
+/* ---------- forms ---------- */
+.form { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > span, .field legend { color: var(--ink-soft); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > .field { flex: 1 1 140px; }
+.inp { width: 100%; min-height: 40px; padding: 8px 10px; background: #000; color: #fff; border: 2px solid #a0a0a0; border-radius: 0; outline: none;
+  user-select: text; -webkit-user-select: text; -webkit-appearance: none; appearance: none; }
+.inp:focus { border-color: #fff; }
+.inp::placeholder { color: #6f6f6f; }
+.inp[disabled] { color: #8a8a8a; border-color: #6f6f6f; }
+.inp[aria-invalid="true"] { border-color: var(--t-red); }
+/* date input: keep the black field, show the picker glyph light, line height the same as text inputs */
+.inp[type="date"] { color-scheme: dark; min-height: 40px; line-height: 20px; }
+.inp[type="date"]::-webkit-date-and-time-value { text-align: left; }
+.inp[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .85; }
+textarea.inp { display: block; min-height: 88px; resize: vertical; line-height: 20px; }
+input[type="number"].inp { -moz-appearance: textfield; appearance: textfield; }
+/* remaining characters under a field */
+.fcount { align-self: flex-end; color: var(--ink-soft); }
+fieldset.field { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
+.ferr { margin: 0; color: var(--t-red-ink); }
+.ferr:empty { display: none; }
+/* a <label class="btn file-btn"> wrapping a hidden <input type="file"> */
+.file-btn input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.file-btn:has(input:focus-visible) { background: #858585; box-shadow: inset 0 0 0 2px #fff, inset 4px 4px 0 #bdbdbd, inset -4px -4px 0 #4a4a4a; }
+
+/* segmented chips (type, prerequisites, background) */
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg label { position: relative; display: flex; align-items: center; gap: 6px; padding: 6px 10px 6px 6px; cursor: pointer; background: #a9a9a9; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7b7b7b; color: var(--ink); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg label:has(input:checked) { background: #6f6f6f; color: #fff; text-shadow: 1px 1px 0 #333; box-shadow: inset 0 0 0 2px #fff; }
+.seg label:has(input:focus-visible) { outline: 2px solid #000; outline-offset: 1px; }
+.seg label:has(input:disabled) { cursor: not-allowed; opacity: .55; }
+.seg img { width: 26px; height: 26px; }
+.seg .mini img { width: 16px; height: 16px; }
+/* background swatches in the area editor: <span class="swatch" style="background-image: url(texture)"> */
+.seg .swatch { width: 26px; height: 26px; background-size: 32px 32px; box-shadow: inset 0 0 0 2px #000; }
+
+/* icon grid */
+.icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 4px; }
+.icons label { position: relative; display: grid; place-items: center; height: 40px; cursor: pointer; background: var(--slot); box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 #fff; }
+.icons img { width: 32px; height: 32px; }
+.icons input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.icons label:has(input:checked) { background: #c5c5ff; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #000; }
+.icons label:has(input:focus-visible) { outline: 2px solid #000; }
+
+/* 「高级」 disclosure in the node editor */
+.adv { display: flex; flex-direction: column; gap: 10px; }
+.adv > summary { cursor: pointer; color: var(--ink-soft); list-style: none; width: max-content; }
+.adv > summary::-webkit-details-marker { display: none; }
+.adv > summary::before { content: "+ "; }
+.adv[open] > summary::before { content: "- "; }

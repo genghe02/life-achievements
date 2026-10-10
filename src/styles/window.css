@@ -1,0 +1,12 @@
+/* ---------- window ---------- */
+.win { flex: 1; min-height: 0; z-index: 1; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; }
+.whead { flex: none; display: flex; align-items: center; gap: 10px; min-height: 32px; padding-inline: 2px; }
+.whead h1 { margin: 0; min-width: 0; font-size: 16px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; }
+.whead .sub { flex: 1; min-width: 0; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.whead .wprog { color: var(--ink); white-space: nowrap; }
+.whead > .btn { flex: none; }
+/* the tree portals its zoom controls in here on desktop; an empty slot must not add a flex gap */
+#zoomSlot { display: contents; }
+/* 「领域设置」: text on desktop, a gear icon on phones */
+.btn-area img { display: none; width: 22px; height: 22px; }
+.wbody { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
